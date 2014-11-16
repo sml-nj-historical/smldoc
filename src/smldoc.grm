@@ -1,0 +1,290 @@
+(* smldoc.grm
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *)
+
+%tokens
+    : KW_abstype		("abstype")
+    | KW_and			("and")
+    | KW_andalso		("andalso")
+    | KW_as			("as")
+    | KW_case			("case")
+    | KW_datatype		("datatype")
+    | KW_do			("do")
+    | KW_else			("else")
+    | KW_end			("end")
+    | KW_eqtype			("eqtype")
+    | KW_exception		("exception")
+    | KW_fn			("fn")
+    | KW_fun			("fun")
+    | KW_functor		("functor")
+    | KW_handle			("handle")
+    | KW_if			("if")
+    | KW_in			("in")
+    | KW_include		("include")
+    | KW_infix			("infix")
+    | KW_infixr			("infixr")
+    | KW_let			("let")
+    | KW_local			("local")
+    | KW_nonfix			("nonfix")
+    | KW_orelse			("orelse")
+    | KW_of			("of")
+    | KW_op			("op")
+    | KW_open			("open")
+    | KW_raise			("raise")
+    | KW_rec			("rec")
+    | KW_sharing		("sharing")
+    | KW_sig			("sig")
+    | KW_signature		("signature")
+    | KW_struct			("struct")
+    | KW_structure		("structure")
+    | KW_then			("then")
+    | KW_type			("type")
+    | KW_val			("val")
+    | KW_where			("where")
+    | KW_while			("while")
+    | KW_with			("with")
+    | KW_withtype		("withtype")
+  (* special symbolic IDs *)
+    | ASTERISK			("*")
+    | ASSIGN			(":=")
+    | AMPERSAND			("&")
+    | BANG			("!")
+    | SLASH			("/")
+  (* punctuation *)
+    | ARROW			("->")
+    | BAR			("|")
+    | COLON			(":")
+    | COLONGT			(":>")
+    | COMMA			(",")
+    | DOTDOTDOT			("...")
+    | EQUALOP			("=")
+    | DARROW			("=>")
+    | HASH			("#")
+    | LBRACE			("{")
+    | LBRACKET			("[")
+    | LPAREN			("(")
+    | RBRACE 			("}")
+    | RBRACKET			("]")
+    | RPAREN			(")")
+    | SEMICOLON			(";")
+    | WILD			("_")
+  (* literals *)
+    | CHAR of IntInf.int
+    | INT of {
+	  digits: string,
+	  negate: bool,
+	  radix: StringCvt.radix
+	}
+    | ID of string
+    | SYMID of string
+    | LONGID of string
+    | REAL of string
+    | STRING of IntInf.int vector
+    | TYVAR of string
+    | WORD of {digits: string, radix: StringCvt.radix}
+  (* MLton extensions *)
+    | KW__build_const		("_build_const")
+    | KW__command_line_const	("_command_line_const")
+    | KW__const			("_const")
+    | KW__address		("_address")
+    | KW__export		("_export")
+    | KW__import		("_import")
+    | KW__overload		("_overload")
+    | KW__symbol		("_symbol")
+(* moved to pml.grm; will remove uses from ml.grm soon
+    | KW__prim			("_prim")
+*)
+  (* documentation comments *)
+    | COMMENT of string
+    | BLANKLN			(* blank line following/proceeding documentation comment *)
+    ;
+
+program
+	: (COMMENT BLANKLN)? topdec+
+	;
+
+topdec
+	: doc? topdec'
+	;
+
+topdec'
+	: "signature" sigbinds
+	;
+
+(*---------------------------------------------------*)
+(*                    Signatures                     *)
+(*---------------------------------------------------*)
+
+sigbinds
+	: sigbind (doc? "and" sigbind)*
+	;
+
+sigbind
+	: sigbind' after_doc?
+	;
+
+sigbind'
+	: id "=" sigexp
+	;
+
+sigexp
+	: id wherespecs
+	| "sig" specs "end" wherespecs
+	;
+
+wherespecs
+	: (* empty *)
+	| "where" wherespec andwherespecs
+	;
+
+andwherespecs
+	: "and" wherespec andwherespecs
+	| "where" wherespec andwherespecs
+	;
+
+wherespec
+	: "type" tyvars longid "=" typ
+(*
+	| ID "=" longid (* SML/NJ where structure extension *)
+	| LONGID "=" longid (* SML/NJ where structure extension *)
+*)
+	;
+
+specs 
+	: spec*
+	;
+
+spec
+	: ";"
+	| doc? spec'
+	;
+
+spec'	: "val" valdesc (doc? "and" valdesc)*
+	| "type" tyvars id typerest
+	| "eqtype" typdesc (doc? "and" typdesc)*
+	| "datatype" tyvars id datarest
+	| "exception" condef (doc? "and" condef)*
+	| "structure" strdesc (doc? "and" strdesc)*
+	| "include" id wherespecs
+	| "include" id id+
+	| "sharing" "type" sharingeqns
+	| "sharing" sharingeqns
+	;
+
+valdesc
+	: valdesc' after_doc?
+	;
+
+valdesc'
+	: id ":" typ
+	;
+
+(* the rest of a "type" tyvars id ... *)
+typerest
+	: ("and" typdesc)*
+	| "=" typ after_doc?
+	;
+
+typdesc
+	: typedesc' after_doc?
+	;
+
+typedesc'
+	: tyvars id
+	;
+
+(* the rest of a "datatype" tyvars id ... *)
+datarest
+	: "=" condefs ("and" datadef)*
+	| "=" "datatype" longid
+	;
+
+datadef
+	: datadef' after_doc?
+	;
+
+datadef'
+	: tyvars id "=" condefs
+	;
+
+condefs
+	: condef ("|" condef)*
+	;
+
+condef
+	: id ("of" typ)?
+	;
+
+strdesc
+	: ID ":" sigexp
+	;
+
+sharingeqns
+	: longid ("=" longid)+
+	;
+
+(*---------------------------------------------------*)
+(*                       Types                       *)
+(*---------------------------------------------------*)
+
+typ
+	: tupletyp ("->" tupletyp)*
+	;
+
+tupletyp
+	: typapp ("*" typapp)*
+	;
+
+typapp
+	: atyp longid*
+	;
+
+atyp
+	: TYVAR
+	| longid
+	| "{" (fieldtyp ("," fieldtyp)* )? "}"
+	| "(" typ ("," typ)* ")"
+	;
+
+fieldtyp
+	: label ":" typ
+	;
+
+(*---------------------------------------------------*)
+(*                    Identifiers                    *)
+(*---------------------------------------------------*)
+
+id
+	: ID
+	| SYMID
+	;
+
+tyvars
+	: (* empty *)
+	| TYVAR
+	| "(" TYVAR ("," TYVAR)* ")"
+	;
+
+longid
+	: ID
+	| SYMID
+	| LONGID
+	;
+
+label
+	: ID
+	| INT
+	;
+
+(*---------------------------------------------------*)
+(*             Documantation comments                *)
+(*---------------------------------------------------*)
+
+doc	: COMMENT
+	;
+
+after_doc
+	: COMMENT BLANKLN
+	;
