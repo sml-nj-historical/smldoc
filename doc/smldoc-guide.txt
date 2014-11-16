@@ -1,0 +1,128 @@
+SMLDoc User's Guide
+===================
+:Author: John Reppy
+:Date: November 16, 2014
+
+//==============================================================================
+== Introduction
+
+*SMLDoc* is a tool for generating documentation from annotated SML source code.  It is
+modeled after similar tools, such as
+http://caml.inria.fr/pub/docs/manual-ocaml-400/manual029.html[*OCamldoc*],
+http://doxygen.org[*Doxygen*], and.
+https://docs.oracle.com/javase/6/docs/technotes/tools/windows/javadoc.html[*Javadoc*].
+
+//==============================================================================
+== Usage
+
+command-line options
+
+//==============================================================================
+== Documentation comments
+
+The standard form of an *smldoc* documentation comment is a normal SML comment written
+with _exactly_ one extra asterisk at the beginning and is associated with the SML
+specification or definition that immediately follows it.  There should be no blank line
+between the comment and the declaration that it is documenting.  For example,
+
+[source,sml]
+------------
+(** An expression tree represents simple integer expressions *)
+datatype expr_tree
+  (** a constant expression *)
+  = EConst of int
+  (** an addition operation *)
+  | EAdd of expr_tree * expr_tree
+  (** a multiplication operation *)
+  | EMul of expr_tree * expr_tree
+------------
+
+Since it is sometimes desirable to putt comments after a definition, one can use
+the _after comment_ form, which has the less-than character immediately following
+the comment opening.  For example
+
+[source,sml]
+------------
+(** An expression tree represents simple integer expressions *)
+datatype expr_tree
+  = EConst of int			(**< a constant expression *)
+  | EAdd of expr_tree * expr_tree	(**< an addition operation *)
+  | EMul of expr_tree * expr_tree	(**< a multiplication operation *)
+------------
+
+//==============================================================================
+== Comment syntax
+
+Documentation comments have an expected structure.
+
+=== Text markup
+
+The *smldoc* tool supports limited text markup in documentation comments.  The design
+of this feature is taken from the ocamldoc tool.
+
+=== Tags
+
+something about tags
+
+[align="center",width="80%",cols="2,5"]
+|============================================================================================
+| +@author+ _string_   |
+The author of the documented element. Multiple author tags are allowed, but there should
+only be one author per tag.
+
+| +@deprecated+ _text_ |
+Mark an element as deprecated. The _text_ should describe when the element was deprecated,
+what to use as a replacement, and the reason for deprecation.
+
+| +@param+ _id_ _text_ |
+Associate the given description to the given parameter name _id_. This tag is used for
+functions and functors.
+
+| +@raise+ _id_ _text_ |
+Notes that the element, which should be a function, may raise the exception _id_.  The _text_
+should describe the circumstances in which the exception is raised.  Multiple +@raise+ tags
+may be included for a given element.
+
+| +@return+ _text_     |
+Describes the return value of the element, which should be a function value.
+
+| +@see+               |
+| +@since+ _string_    |
+| +@source+            |
+| +@before+            |
+| +@version+ _string_  |
+Specifies the version number for the documented element.
+
+| +@instance+ _id_     |
+Specifies that the structure _id_ is an instance of the signature.
+
+|============================================================================================
+
+=== Prefixes
+
+For multiline documentation comments, any prefix consisting of whitespace and one or more
+asterisks is ignored.  Furthermore, leading whitespace (including that following the prefix)
+is also ignored.  For example, the comment
+
+[source,sml]
+------------
+(** This is a multiline comment
+  * this is the second line with a prefix
+    and this is the third, which does not use the prefix
+  *)
+------------
+
+is processed like the following
+
+[source,sml]
+------------
+(** This is a multiline comment
+this is the second line with a prefix
+and this is the third, which does not use the prefix
+*)
+------------
+
+== Limitations
+
+The current version of *smldoc* only supports processing SML signatures and only
+generates HTML output.
