@@ -4,6 +4,7 @@
 SHELL =		/bin/sh
 
 TEXT_FILES =	$(wildcard *.txt)
+EXAMPLE_FILES =	$(wildcard *.sml)
 XML_FILES =	$(TEXT_FILES:.txt=.xml)
 PDF_FILES =	$(TEXT_FILES:.txt=.pdf)
 HTML_FILES =	$(TEXT_FILES:.txt=.html)
