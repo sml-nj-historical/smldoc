@@ -11,11 +11,12 @@ modeled after similar tools, such as
 http://caml.inria.fr/pub/docs/manual-ocaml-400/manual029.html[*OCamldoc*],
 http://doxygen.org[*Doxygen*], and.
 https://docs.oracle.com/javase/6/docs/technotes/tools/windows/javadoc.html[*Javadoc*].
+It currently processes SML signatures, producing HTML output.
 
 //==============================================================================
 == Usage
 
-command-line options
+TODO: command-line options
 
 //==============================================================================
 == Documentation comments
