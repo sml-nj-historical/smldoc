@@ -54,35 +54,54 @@ datatype expr_tree
 //==============================================================================
 == Comment syntax
 
-Documentation comments have an expected structure.
+A documentation comment consists of descriptive text followed by optional tags.
+The text and some parts of the tags may include text markup annotations.
 
 === Text markup
 
-The *smldoc* tool supports limited text markup in documentation comments.  The design
-of this feature is taken from the ocamldoc tool.  The following grammar describes
+The *smldoc* tool supports limited text markup in documentation comments.  The markup
+syntax is a lightweight LaTeX style for the most part. The following grammar describes
 the format of the markup language.  Literal text is in [blue]+blue monospaced+ font,
 terminals and nont-terminals are in [maroon]_maroon italics_, and we
-use [black]#braces# to denote a list of one or more elements.
+use [black]#braces# to denote a list of zero or more elements.
 
-[separator="&",grid="none",align="center",width="80%",cols=">2,^1,<4,8"]
+[separator="&",grid="none",align="center",width="90%",cols=">2,^1,<6,8"]
 |==============================================================================
-& [maroon]_text_   & ::= & [black]#{# [maroon]_text-element_ [black]#}#  & a list of text elements
+& [maroon]_content_
+  & ::= & [black]#{# [maroon]_text-block_ [black]#}# [black]#{# [maroon]_tag_ [black]#}#
+        & a documentation comment consists of zero or more text blocks followed by zero or
+          more documentation tags.
+
+& [maroon]_text-block_
+  & ::= & [maroon]_text_
+        & inline text
+& &  |  & [blue]+\begin{+ [maroon]_style_ [blue]+}+ [maroon]_text-block_ [blue]+\end{+ [maroon]_style_ [blue]+}+
+        & format the text block according to [maroon]_style_.  Note that the beginning [maroon]_style_
+          and ending [maroon]_style_ must be the same.
+& &  |  & [blue]+\begin{+ [maroon]_list_ [blue]+}+ [black]#{# [maroon]_item_ [black]#}# [blue]+\end{+ [maroon]_list_ [blue]+}+
+        & a list of items.  Note that the beginning [maroon]_list_ style
+          and ending [maroon]_list_ style must be the same.
+& &  |  & [maroon]_blank-line_
+        & a newline separating text blocks
+
+& [maroon]_style_
+  & ::= & [blue]+center+
+        & center contents of text block
+& &  |  & [blue]+quote+
+        & indent contents of text block
+
+& [maroon]_item_   & ::= & [blue]+\item+ [maroon]_text-block_ & list item
+
+& [maroon]_text_
+  & ::= & [black]#{# [maroon]_text-element_ [black]#}#
+        & a sequence of zero or more text elements
 
 & [maroon]_text-element_
-                   & ::= & & empty
-&                  &  |  & [blue]+{b+ [maroon]_text_ [blue]+}+ & bold text
-&                  &  |  & [blue]+{i+ [maroon]_text_ [blue]+}+ & italic text
-&                  &  |  & [blue]+{e+ [maroon]_text_ [blue]+}+ & emphasize text
-&                  &  |  & [blue]+{C+ [maroon]_text_ [blue]+}+ & center text
-&                  &  |  & [blue]+{L+ [maroon]_text_ [blue]+}+ & left-justifuy text
-&                  &  |  & [blue]+{R+ [maroon]_text_ [blue]+}+ & right-justify text
-&                  &  |  & [blue]+{ul+ [black]#{# [maroon]_item_ [black]#}# [blue]+}+ & itemized list
-&                  &  |  & [blue]+{ol+ [black]#{# [maroon]_item_ [black]#}# [blue]+}+ & enumerated list
-&                  &  |  & [blue]+[+ [maroon]_string_ [blue]+]+ & SML code
-&                  &  |  & [maroon]_esc-string_ & typeset the given escaped string
-&                  &  |  & [maroon]_blank-line_ & force a newline
-
-& [maroon]_item_   & ::= & [blue]+{-+ [maroon]_text_ +}+ & list item
+  & ::= & [blue]+\b{+ [maroon]_text_ [blue]+}+ & bold text
+& &  |  & [blue]+\i{+ [maroon]_text_ [blue]+}+ & italic text
+& &  |  & [blue]+\e{+ [maroon]_text_ [blue]+}+ & emphasize text
+& &  |  & [blue]+[+ [maroon]_string_ [blue]+]+  & SML code
+& &  |  & [maroon]_esc-string_ & typeset the given escaped string
 
 & [maroon]_string_ & ::= & [black]#{# [maroon]_ascii-character_ [black]#}#
                          & a sequence of one or more printable or whitespace
@@ -108,7 +127,9 @@ use [black]#braces# to denote a list of one or more elements.
 
 === Tags
 
-something about tags
+The optional tags follow the descriptive text in a documatation comment.
+Tags are special identifiers that begin with the [blue]+@+ character.
+Some tags are restricted to the file-level or module-level comments.
 
 [align="center",width="80%",cols="2,5"]
 |==============================================================================
@@ -116,21 +137,24 @@ something about tags
 The author of the documented element. Multiple author tags are allowed, but
 there should only be one author per tag.
 
+| [blue]+@date+ [maroon]_string_     |
+Specifies a date for the element.  The date should be in _YYYY-MM-DD_ format (ISO 8601).
+
 | [blue]+@deprecated+ [maroon]_text_ |
 Mark an element as deprecated. The [maroon]_text_ should describe when the element was
 deprecated, what to use as a replacement, and the reason for deprecation.
 
-| [blue]+@param+ [maroon]_id_ [maroon]_text_ |
+| [blue]+@param+ [maroon]_id_ [maroon]_text-block_ |
 Associate the given description to the given parameter name [maroon]_id_. This tag
 is used for functions and functors.
 
-| [blue]+@raise+ [maroon]_id_ [maroon]_text_ |
+| [blue]+@raise+ [maroon]_id_ [maroon]_text-block_ |
 Notes that the element, which should be a function, may raise the
 exception [maroon]_id_.  The [maroon]_text_ should describe the circumstances in which the
 exception is raised.  Multiple [blue]+@raise+ tags may be included for a given
 element.
 
-| [blue]+@return+ [maroon]_text_     |
+| [blue]+@return+ [maroon]_text-block_     |
 Describes the return value of the element, which should be a function value.
 
 | [blue]+@see+               |
