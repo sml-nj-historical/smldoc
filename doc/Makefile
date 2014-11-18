@@ -4,7 +4,7 @@
 SHELL =		/bin/sh
 
 TEXT_FILES =	$(wildcard *.txt)
-EXAMPLE_FILES =	$(wildcard *.sml)
+EXAMPLE_FILES =	$(wildcard *.sml) $(wildcard *.sig)
 XML_FILES =	$(TEXT_FILES:.txt=.xml)
 PDF_FILES =	$(TEXT_FILES:.txt=.pdf)
 HTML_FILES =	$(TEXT_FILES:.txt=.html)
@@ -20,6 +20,9 @@ all:		smldoc-guide.html
 
 %.html : %.txt
 	asciidoc -b html --attribute=source-highlighter=pygments $<
+
+smldoc-guide.txt:	$(EXAMPLE_FILES)
+	touch smldoc-guide.txt
 
 .PHONY:	clean
 clean:

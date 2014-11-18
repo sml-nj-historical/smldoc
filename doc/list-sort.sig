@@ -5,7 +5,8 @@
  *)
 
 (** The interface to an implementation of list sorting
- ** @author Johh Reppy
+ ** @author John Reppy
+ ** @date 2014-11-17
  ** @version 1.0
  ** @instance ListMergeSort
  ** @instance ListQuickSort
@@ -13,7 +14,7 @@
 signature LIST_SORT =
   sig
 
-  (** [sort gt lst] sorts the list [lst] in increasing order according to the {i greater-than}
+  (** [sort gt lst] sorts the list [lst] in increasing order according to the \i{greater-than}
    ** predicate [gt].
    ** @param gt tests if its first argument is greater than its second argument
    ** @param lst the list to be sorted

@@ -131,41 +131,47 @@ The optional tags follow the descriptive text in a documatation comment.
 Tags are special identifiers that begin with the [blue]+@+ character.
 Some tags are restricted to the file-level or module-level comments.
 
-[align="center",width="80%",cols="2,5"]
+[align="center",width="90%",cols="2,5"]
 |==============================================================================
-| [blue]+@author+ [maroon]_string_   |
-The author of the documented element. Multiple author tags are allowed, but
-there should only be one author per tag.
+| [blue]+@author+ [maroon]_string_
+| The author of the documented element. Multiple author tags are allowed, but
+  there should only be one author per tag.
 
-| [blue]+@date+ [maroon]_string_     |
-Specifies a date for the element.  The date should be in _YYYY-MM-DD_ format (ISO 8601).
+| [blue]+@date+ [maroon]_string_
+| Specifies a date for the element.  The date should be in _YYYY-MM-DD_ format (ISO 8601).
 
-| [blue]+@deprecated+ [maroon]_text_ |
-Mark an element as deprecated. The [maroon]_text_ should describe when the element was
-deprecated, what to use as a replacement, and the reason for deprecation.
+| [blue]+@deprecated+ [maroon]_text_
+| Mark an element as deprecated. The [maroon]_text_ should describe when the element was
+  deprecated, what to use as a replacement, and the reason for deprecation.
 
-| [blue]+@param+ [maroon]_id_ [maroon]_text-block_ |
-Associate the given description to the given parameter name [maroon]_id_. This tag
-is used for functions and functors.
+| [blue]+@param+ [maroon]_id_ [maroon]_text-block_
+| Associate the given description to the given parameter name [maroon]_id_. This tag
+  is used for functions and functors.
 
-| [blue]+@raise+ [maroon]_id_ [maroon]_text-block_ |
-Notes that the element, which should be a function, may raise the
-exception [maroon]_id_.  The [maroon]_text_ should describe the circumstances in which the
-exception is raised.  Multiple [blue]+@raise+ tags may be included for a given
-element.
+| [blue]+@raise+ [maroon]_id_ [maroon]_text-block_
+| Notes that the element, which should be a function, may raise the
+  exception [maroon]_id_.  The [maroon]_text_ should describe the circumstances in which the
+  exception is raised.  Multiple [blue]+@raise+ tags may be included for a given
+  element.
 
-| [blue]+@return+ [maroon]_text-block_     |
-Describes the return value of the element, which should be a function value.
+| [blue]+@return+ [maroon]_text-block_
+| Describes the return value of the element, which should be a function value.
 
-| [blue]+@see+               |
-| [blue]+@since+ [maroon]_string_    |
-| [blue]+@source+            |
-| [blue]+@before+            |
-| [blue]+@version+ [maroon]_string_  |
-Specifies the version number for the documented element.
+| [blue]+@see+ [maroon]_quoted-string_ [maroon]_text-block_
+| Adds a "See Also" heading with the specified [maroon]_quoted-string_ and descriptive
+  text.
 
-| [blue]+@instance+ [maroon]_id_     |
-Specifies that the structure [maroon]_id_ is an instance of the signature.
+| [blue]+@since+ [maroon]_string_
+| Adds a "Since" heading with the specified [maroon]_string_ to the generated documentation.
+  The text has no special internal structure. This tag is valid in any documentation comment.
+  It means that the documented element has existed since the software release specified by
+  the [maroon]_string_.
+
+| [blue]+@version+ [maroon]_string_
+| Specifies the version number for the documented element.
+
+| [blue]+@instance+ [maroon]_id_
+| Specifies that the structure [maroon]_id_ is an instance of the signature.
 
 |==============================================================================
 
