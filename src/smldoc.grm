@@ -97,12 +97,36 @@
     | KW__prim			("_prim")
 *)
   (* documentation comments *)
-    | COMMENT of string
+    | COMMENT_START		("(**")
+    | COMMENT_END		("*)")
     | BLANKLN			(* blank line following/proceeding documentation comment *)
+  (* Text markup tkens *)
+    | BEGIN_CENTER of Atom.atom	('\begin{center}')
+    | END_CENTER of Atom.atom	('\end{center}')
+    | BEGIN_QUOTE of Atom.atom	('\begin{quote}')
+    | END_QUOTE of Atom.atom	('\end{quote}')
+    | BEGIN_ITEM of Atom.atom	('\begin{item}')
+    | END_ITEM of Atom.atom	('\end{item}')
+    | BEGIN_ENUM of Atom.atom	('\begin{enumerate}')
+    | END_ENUM of Atom.atom	('\end{enumerate}')
+    | BOLD			("\b{")
+    | ITALIC			("\i{")
+    | EMPH			("\e{")
+  (* Documentation tags *)
+    | TAG_author		("@author")
+    | TAG_date			("@date")
+    | TAG_deprecated		("@deprecated")
+    | TAG_param			("@param")
+    | TAG_raise			("@raise")
+    | TAG_return		("@return")
+    | TAG_see			("@see")
+    | TAG_since			("@since")
+    | TAG_version		("@version")
+    | TAG_instance		("@instance")
     ;
 
 program
-	: (COMMENT BLANKLN)? topdec+
+	: (comment BLANKLN)? topdec+
 	;
 
 topdec
@@ -282,9 +306,35 @@ label
 (*             Documantation comments                *)
 (*---------------------------------------------------*)
 
-doc	: COMMENT
+doc	: comment
 	;
 
 after_doc
-	: COMMENT BLANKLN
+	: comment BLANKLN
+	;
+
+comment
+	: COMMENT_START textblock* tag* COMMENT_END
+	;
+
+textblock
+	: BLANKLN
+	| text
+	| "\begin{center}" textblock* "\end{center}"
+	| "\begin{quote}" textblock* "\end{center}"
+	| "\begin{itemize}" item* "\end{itemize}"
+	| "\begin{enumerate}" item* "\end{enumerate}"
+	;
+
+tag
+	: "@author"
+	| "@date"
+	| "@deprecated"
+	| "@param"
+	| "@raise" WS longid WS
+	| "@return"
+	| "@see"
+	| "@since"
+	| "@version"
+	| "@instance"
 	;
