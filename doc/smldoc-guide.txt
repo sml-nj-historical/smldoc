@@ -38,7 +38,7 @@ datatype expr_tree
   | EMul of expr_tree * expr_tree
 ------------
 
-Since it is sometimes desirable to putt comments after a definition, one can use
+Since it is sometimes desirable to put comments after a definition, one can use
 the _after comment_ form, which has the less-than character immediately following
 the comment opening.  For example
 
@@ -62,7 +62,7 @@ The text and some parts of the tags may include text markup annotations.
 The *smldoc* tool supports limited text markup in documentation comments.  The markup
 syntax is a lightweight LaTeX style for the most part. The following grammar describes
 the format of the markup language.  Literal text is in [blue]+blue monospaced+ font,
-terminals and nont-terminals are in [maroon]_maroon italics_, and we
+terminals and non-terminals are in [maroon]_maroon italics_, and we
 use [black]#braces# to denote a list of zero or more elements.
 
 [separator="&",grid="none",align="center",width="90%",cols=">2,^1,<6,8"]
@@ -119,6 +119,13 @@ use [black]#braces# to denote a list of zero or more elements.
 			   [blue]+@+, and [blue]+\+) must be escaped
 			   with a backslash ([blue]+\+).
 
+& [maroon]_quoted-string_
+                   & ::= & [blue]+"+ [maroon]_ascii-character_ [blue]+"+
+                         & a sequence of one or more printable or whitespace
+			   ASCII characters enclosed in double quotes.
+                           The double-quote ([blue]+"+) and backslash ([blue]+\+)
+			   characters must be escaped with a backslash ([blue]+\+).
+
 & [maroon]_id_     & ::= & [black]#{# [maroon]_printable-character_ [black]#}#
                          & a sequence of non-space ASCII characters. Special
                            characters may appear without escape.
@@ -127,7 +134,7 @@ use [black]#braces# to denote a list of zero or more elements.
 
 === Tags
 
-The optional tags follow the descriptive text in a documatation comment.
+The optional tags follow the descriptive text in a documentation comment.
 Tags are special identifiers that begin with the [blue]+@+ character.
 Some tags are restricted to the file-level or module-level comments.
 
@@ -155,7 +162,7 @@ Some tags are restricted to the file-level or module-level comments.
   element.
 
 | [blue]+@return+ [maroon]_text-block_
-| Describes the return value of the element, which should be a function value.
+| Describes the return value of a function.
 
 | [blue]+@see+ [maroon]_quoted-string_ [maroon]_text-block_
 | Adds a "See Also" heading with the specified [maroon]_quoted-string_ and descriptive
