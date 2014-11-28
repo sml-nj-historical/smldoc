@@ -6,6 +6,16 @@
 
 %name SMLDocLexer;
 
+$defs(
+    structure T = Tokens
+    structure MT = MarkupTokens
+
+  (* markup token buffer for parsing documentation comments *)
+    val markup : MT.token list ref = ref[]
+    val addMarkup tok = (markup := tok :: !markup)
+    val getMarkup () = (List.rev(!markup) before markup := [])
+);
+
 %let alphanum = [A-Za-z'_0-9]*;
 %let alphanumId = [A-Za-z]{alphanum};
 %let sym = [-!%&$+/:<=>?@~`\^|#*]|"\\";
@@ -24,34 +34,34 @@
 %let hexDigit = [0-9a-fA-F];
 %let hexnum = {hexDigit}+;
 
-(* C - comments; DC - documentation comment; S - string; F - split strings *)
-%states INITIAL C DC S F;
+(* C - comments; S - string; F - split strings; DC - documentation comment; *)
+%states INITIAL C S F DC;
 
 (**** Punctuation ****)
-<INITIAL>","	=> (Tokens.COMMA);
-<INITIAL>"{"	=> (Tokens.LBRACE);
-<INITIAL>"}"	=> (Tokens.RBRACE);
-<INITIAL>"["	=> (Tokens.LBRACKET);
-<INITIAL>"]"	=> (Tokens.RBRACKET);
-<INITIAL>";"	=> (Tokens.SEMICOLON);
-<INITIAL>"("	=> (Tokens.LPAREN);
-<INITIAL>")"	=> (Tokens.RPAREN);
-<INITIAL>"..."	=> (Tokens.DOTDOTDOT);
+<INITIAL>","	=> (T.COMMA);
+<INITIAL>"{"	=> (T.LBRACE);
+<INITIAL>"}"	=> (T.RBRACE);
+<INITIAL>"["	=> (T.LBRACKET);
+<INITIAL>"]"	=> (T.RBRACKET);
+<INITIAL>";"	=> (T.SEMICOLON);
+<INITIAL>"("	=> (T.LPAREN);
+<INITIAL>")"	=> (T.RPAREN);
+<INITIAL>"..."	=> (T.DOTDOTDOT);
 
 <INITIAL>{id}	=> (Keywords.idToken yytext);
 
-<INITIAL>{real}	=> (Tokens.REALyytext);
-<INITIAL>{num}	=> (Tokens.INT yytext);
+<INITIAL>{real}	=> (T.REALyytext);
+<INITIAL>{num}	=> (T.INT yytext);
 <INITIAL>"~"{num}
-		=> (Tokens.INT yytext);
+		=> (T.INT yytext);
 <INITIAL>"0x"{hexnum}
-		=> (Tokens.INT yytext);
+		=> (T.INT yytext);
 <INITIAL>"~0x"{hexnum}
-		=> (Tokens.INT yytext);
+		=> (T.INT yytext);
 <INITIAL>"0w"{num}
-		=> (Tokens.WORD yytext);
+		=> (T.WORD yytext);
 <INITIAL>"0wx"{hexnum}
-		=> (Tokens.WORD yytext);
+		=> (T.WORD yytext);
 
 <INITIAL>\"     => (charlist := [yytext]
                     ; stringStart := Source.getPos (source, Position.toInt yypos)
@@ -68,7 +78,8 @@
 <INITIAL>"(**)"	=> ();
 <INITIAL>"(**""*"+")"	
 	=> (continue());
-<INITIAL>"(**"	=> (YYBEGIN DC; continue());
+<INITIAL>"(**<"	=> (YYBEGIN DC; T.AFTER_COMMENT(continue()) before YYBEGIN INITIAL);
+<INITIAL>"(**"	=> (YYBEGIN DC; T.COMMENT(continue()) before YYBEGIN INITIAL);
 <INITIAL>"(*"   => (YYBEGIN C;
 		    commentLevel := 1
                     commentStart := Source.getPos (source, Position.toInt yypos);
@@ -83,35 +94,6 @@
                     continue ());
 <C>.            => (continue ());
 
-(**** Documentation comments ****)
-
-<DC>"@author"	=> (Tokens.TAG_author);
-<DC>"@deprecated"
-		=> (Tokens.TAG_deprecated);
-<DC>"@param"	=> (Tokens.TAG_param);
-<DC>"@raise"	=> (Tokens.TAG_raise);
-<DC>"@return"	=> (Tokens.TAG_return);
-<DC>"@see"	=> (Tokens.TAG_see);
-<DC>"@since"	=> (Tokens.TAG_since);
-<DC>"@source"	=> (Tokens.TAG_source);
-<DC>"@before"	=> (Tokens.TAG_before);
-<DC>"@version"	=> (Tokens.TAG_version);
-<DC>"{[0-9]+"	=> (Tokens.SECTION(valOf(Int.fromString(String.extract(yytext, 1, NONE)))));
-<DC>"{b"	=> (Tokens.BOLD);
-<DC>"{i"	=> (Tokens.ITALIC);
-<DC>"{e"	=> (Tokens.EMPH);
-<DC>"{C"	=> (Tokens.CENTER);
-<DC>"{L"	=> (Tokens.LEFT);
-<DC>"{R"	=> (Tokens.RIGHT);
-<DC>"{ul"	=> (Tokens.ITEMIZE);
-<DC>"{ol"	=> (Tokens.ENUMERATE);
-<DC>"{-"	=> (Tokens.ITEM);
-<DC>"}"		=> (Tokens.CLOSE);
-<DC>"{["	=> (Tokens.PRE_CODE);
-<DC>"]}"	=> (Tokens.CLOSE_PRE_CODE);
-<DC>"["		=> (Tokens.CODE);
-<DC>"]"		=> (Tokens.CLOSE_CODE);
-
 (***** Strings *****)
 <S>"\""	=> (let
 	    val s = String.concat (List.rev ("\"" :: !charlist))
@@ -119,8 +101,8 @@
 	    in
 	      YYBEGIN INITIAL;
 	      if !stringtype
-		then Tokens.STRING s
-		else Tokens.CHAR s
+		then T.STRING s
+		else T.CHAR s
 	    end);
 <S>\\a          => (addChar #"\a"; continue ());
 <S>\\b          => (addChar #"\b"; continue ());
@@ -169,3 +151,47 @@
                     ; continue ());
 <F>.            => (stringError (source, yypos, "unclosed string")
                     ; continue ());
+
+(**** Documentation comments ****
+ *
+ * This part of the scanner handles text that is inside a documentation comment.
+ * We tokenize the contents of the comment and return the list of tokens as a single
+ * SML parser token (wrapped with either COMMENT or AFTER_COMMENT).
+ *)
+
+(* the DC_BOL state handles prefixes at the beginning of a line *)
+<DC_BOL>{ws}*"*"*{ws}*{eol}
+			=> (addMarkup MT.BLANKLN; continue());
+<DC_BOL>{ws}*"*"*	=> (YYBEGIN DC; continue());
+<DC>{eol}		=> (addMarkup MT.NL; YYBEGIN DC_BOL; continue());
+
+<DC,DC_BOL>"*)"		=> (getMarkup())
+<DC>"@author"		=> (addMarkup MT.TAG_author; continue());
+<DC>"@deprecated"	=> (addMarkup MT.TAG_deprecated; continue());
+<DC>"@param"		=> (addMarkup MT.TAG_param; continue());
+<DC>"@raise"		=> (addMarkup MT.TAG_raise; continue());
+<DC>"@return"		=> (addMarkup MT.TAG_return; continue());
+<DC>"@see"		=> (addMarkup MT.TAG_see; continue());
+<DC>"@since"		=> (addMarkup MT.TAG_since; continue());
+<DC>"@source"		=> (addMarkup MT.TAG_source; continue());
+<DC>"@before"		=> (addMarkup MT.TAG_before; continue());
+<DC>"@version"		=> (addMarkup MT.TAG_version; continue());
+
+
+<DC>"{[0-9]+"		=> (MT.SECTION(valOf(Int.fromString(String.extract(yytext, 1, NONE)))));
+<DC>"\b{"		=> (MT.BOLD);
+<DC>"\i{"		=> (MT.ITALIC);
+<DC>"\e{"		=> (MT.EMPH);
+<DC>"\begin{center}"	=> (MT.CENTER);
+<DC>"\end{center}"	=> (MT.CENTER);
+<DC>"\begin{quote}"	=> (MT.LEFT);
+<DC>"\end{quote}"	=> (MT.LEFT);
+<DC>"{R"		=> (MT.RIGHT);
+<DC>"\begin{itemize}"	=> (MT.ITEMIZE);
+<DC>"\end{itemize}"	=> (MT.ITEMIZE);
+<DC>"\begin{enumerate}"	=> (MT.ENUMERATE);
+<DC>"\end{enumerate}"	=> (MT.ENUMERATE);
+<DC>"\item"		=> (MT.ITEM);
+<DC>"}"			=> (MT.CLOSE);
+<DC>"["			=> (MT.CODE);
+<DC>"]"			=> (MT.CLOSE_CODE);

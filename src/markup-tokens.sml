@@ -1,13 +1,13 @@
-(* tokens.sml
+(* markup-tokens.sml
  *
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
-strstructure Tokens =
+strstructure MarkupTokens =
   struct
 
-    datatype Tokens =
+    datatype tokens =
       = EOF		(* end-of-file *)
       | BLANK		(* blank line *)
       | WS		(* whitespace (other than line breaks) *)
@@ -56,9 +56,19 @@ strstructure Tokens =
       | REAL of string
       | STRING of string
       | CHAR of string
+    (* documentation comments *)
+      | BLANKLN				(* blank line following/proceeding documentation comment *)
+      | TEXT of string			(* non-whitespace text *)
+      | WS of string			(* whitespace *)
     (* Text markup tkens *)
-      | BEGIN_STYLE of Atom.atom	(* '\begin{' ID '} *)
-      | END_STYLE of Atom.atom		(* '\end{' ID '}' *)
+      | BEGIN_CENTER of Atom.atom	(* '\begin{center}' *)
+      | END_CENTER of Atom.atom		(* '\end{center}' *)
+      | BEGIN_QUOTE of Atom.atom	(* '\begin{quote}' *)
+      | END_QUOTE of Atom.atom		(* '\end{quote}' *)
+      | BEGIN_ITEM of Atom.atom		(* '\begin{itemize}' *)
+      | END_ITEM of Atom.atom		(* '\end{itemize}' *)
+      | BEGIN_ENUM of Atom.atom		(* '\begin{enumerate}' *)
+      | END_ENUM of Atom.atom		(* '\end{enumerate}' *)
       | ITEM				(* '\item' *)
       | BOLD				(* '\b{' *)
       | ITALIC				(* '\i{' *)
