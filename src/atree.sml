@@ -9,8 +9,8 @@
 structure ATree =
   struct
 
-  (* documentation comment *)
-    type doc = string option
+  (* raw documentation comment *)
+    type doc = MarkupTokens.token list
 
   (* identifiers *)
     type id = string
@@ -24,7 +24,17 @@ structure ATree =
       | RECORDty of (id * typ * doc) list
       | PARENty of typ
 
-    datatype sigbody = (doc * spec) list
+    datatype file
+      = FILE of (doc * topdec list)
+
+    and topdec
+      = SIGdec of id * sigexp * where_spec list
+
+    and sigexp
+      = IDsigexp of id
+      | SIGsigexp of sigbody
+
+    and sigbody = SIGbody of (doc * spec) list
 
   (* SML specifications *)
     and spec
@@ -32,23 +42,26 @@ structure ATree =
       | STRspec of (id * id * where_spec list)
       | STRSIGspec of (id * sigbody)
       | SHARINGspec of sharing_spec list
-      | EXNspec of (id * typ option) list
+      | EXNspec of (doc * id * typ option) list
       | TYspec of {
+	    doc : doc,
 	    eq : bool,
 	    params : id list,
 	    id : id,
 	    def : typ option
 	  } list
       | DTspec of {		(* a list of mutually recursive datatype specs *)
+	    doc : doc,
 	    params : id list,
 	    id : id,
-	    cons : (id * typ option * M.markup list) list
+	    cons : (id * typ option * doc) list
 	  } list
       | DTDEFspec of {		(* a definition of a datatype *)
+	    doc : doc,
 	    id : string,
 	    def : id
 	  } list
-      | VALspec of (id * typ * doc) list
+      | VALspec of (doc * id * typ) list
 
     and con_spec
       = CONspec of string * typ option * doc
@@ -69,4 +82,3 @@ structure ATree =
 	  }
 
   end
-

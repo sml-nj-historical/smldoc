@@ -7,7 +7,7 @@
 strstructure MarkupTokens =
   struct
 
-    datatype tokens =
+    datatype token =
       = EOF		(* end-of-file *)
       | BLANK		(* blank line *)
       | WS		(* whitespace (other than line breaks) *)

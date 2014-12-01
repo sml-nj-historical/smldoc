@@ -102,17 +102,34 @@
     | AFTER_COMMENT of MarkupTokens.token list
     ;
 
+%defs(
+fun opt2list NONE = []
+  | opt2list (SOME l) = l
+);
+
 program
 	: topdec' topdec*
+		=> (A.FILE([], topdec' :: topdec))
 	| doc (BLANKLN? doc)? topdec' topdec*
+		=> (let
+		    val td = (case SR of NONE => ([], topdec') | SOME d => (d, topdec'))
+		    in
+		      A.FILE(doc, td :: topdec)
+		    end)
 	;
 
 topdec
 	: doc? topdec'
+		=> (let
+		    val (d, td)::r = topdec'
+		    in
+		      (opt2list doc @ d, td) :: r
+		    end)
 	;
 
 topdec'
 	: "signature" sigbinds
+		=> (sigbinds)
 	;
 
 (*---------------------------------------------------*)
@@ -120,34 +137,44 @@ topdec'
 (*---------------------------------------------------*)
 
 sigbinds
-	: sigbind (doc? "and" sigbind)*
+	: sigbind (doc? "and" sigbind => (opt2list doc, sigbind))*
+		=> (sigbind :: SR)
 	;
 
 sigbind
 	: sigbind' after_doc?
+		=> (opt2list after_doc, sigbind')
 	;
 
 sigbind'
 	: id "=" sigexp
+		=> (A.SIGdec(id, #1 sigexp, #2 sigexp))
 	;
 
 sigexp
 	: id wherespecs
+		=> (A.IDsigexp id, wherespecs)
 	| "sig" specs "end" wherespecs
+		=> (A.SIGsigexp specs, wherespecs)
 	;
 
 wherespecs
 	: (* empty *)
+		=> ([])
 	| "where" wherespec andwherespecs
+		=> (wherespec :: andwherespecs)
 	;
 
 andwherespecs
 	: "and" wherespec andwherespecs
+		=> (wherespec :: andwherespecs)
 	| "where" wherespec andwherespecs
+		=> (wherespec :: andwherespecs)
 	;
 
 wherespec
 	: "type" tyvars longid "=" typ
+		=> (A.WHEREty{params=tyvars, id=longid, def=typ})
 (*
 	| ID "=" longid (* SML/NJ where structure extension *)
 	| LONGID "=" longid (* SML/NJ where structure extension *)
@@ -156,11 +183,14 @@ wherespec
 
 specs 
 	: spec*
+		=> (List.mapPartial (fn x => x) spec)
 	;
 
 spec
 	: ";"
+		=> (NONE)
 	| doc? spec'
+		=> (SOME(opt2list doc, spec'))
 	;
 
 spec'	: "val" valdesc (doc? "and" valdesc)*
