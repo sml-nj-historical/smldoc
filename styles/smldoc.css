@@ -4,9 +4,15 @@
  * All rights reserved.
  */
 
+/***** Layout *****/
+
+div.sidebar {
+}
+
+div.
 /***** Styles for SML code *****/
 
-.sml-code, pre {
+pre {
   font-family: "Courier New", Courier, monospace;
   font-size: inherit;
   color: #6c71c4;
@@ -15,9 +21,12 @@
 }
 
 .sml-code {							/* code display */
+  font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
   color: #6c71c4;
   background: #dcdcdc;
+  padding: 0;
+  margin: 0;
 }
 .sml-code .kw { font-weight: bold; color: #268bd2; }		/* keywords */
 .sml-code .com { color: #dc322f; font-style: italic; }		/* comments */
