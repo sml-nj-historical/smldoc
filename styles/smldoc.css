@@ -1,0 +1,33 @@
+/* smldoc.css
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ */
+
+/***** Styles for SML code *****/
+
+.sml-code, pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: #6c71c4;
+  padding: 0;
+  margin: 0;
+}
+
+.sml-code {							/* code display */
+  font-size: 0.9em;
+  color: #6c71c4;
+  background: #dcdcdc;
+}
+.sml-code .kw { font-weight: bold; color: #268bd2; }		/* keywords */
+.sml-code .com { color: #dc322f; font-style: italic; }		/* comments */
+.sml-code .str { color: #b58900; }				/* string literal */
+.sml-code .num { color: #b58900; }				/* numeric literal */
+.sml-code .p { color: #6c71c4; }				/* punctuation */
+.sml-code .sigid { color: #6c71c4; }				/* bound signature ID */
+.sml-code .strid { color: #6c71c4; }				/* bound module/functor ID */
+.sml-code .tv { color: #6c71c4; }				/* type variable */
+.sml-code .tyid { color: #6c71c4; }				/* bound type ID */
+.sml-code .conid { color: #6c71c4; }				/* bound constructor ID */
+.sml-code .exnid { color: #6c71c4; }				/* bound exception ID */
+.sml-code .varid { color: #6c71c4; }				/* bound value ID */
