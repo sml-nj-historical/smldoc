@@ -162,7 +162,7 @@ pre {
 
 /***** Styles for SML code *****/
 
-.sml-inlne {							/* inline SML code */
+.sml-inline {							/* inline SML code */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
   color: @color-code;
@@ -179,7 +179,7 @@ pre .sml-code {							/* code display */
   whitespace: pre;
 }
 
-.sml-code, .sml-inine {
+.sml-code, .sml-inline {
   .kw { font-weight: bold; color: @color-kw; }		/* keywords */
   .com { color: @color-com; font-style: italic; }	/* comments */
   .str { color: @color-string; }			/* string literal */
@@ -192,4 +192,9 @@ pre .sml-code {							/* code display */
   .conid { color: @color-conid; }			/* bound constructor ID */
   .exnid { color: @color-exnid; }			/* bound exception ID */
   .varid { color: @color-valid; }			/* bound value ID */
+};
+
+.sml-code a {
+  color: inherit;
+  text-decoration: underline;
 };

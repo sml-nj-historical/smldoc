@@ -3,8 +3,8 @@
 <html lang="en">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <meta name="generator" content="smldoc" />
-  <link rel="stylesheet" href="smldoc.css" type="text/css" />
+  <meta name="generator" content="smldoc">
+  <link rel="stylesheet" href="smldoc.css" type="text/css">
   <title>smldoc test layout page</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div id="layout-banner-spacer"></div>
     <div id="layout-banner">
       <div id="layout-title">
-        <div id="layout-title-main"><span class="sml-inline"><span class="kw">signature</span> <span class="sigid">EXAMPLE</span></span></div>
+        <div id="layout-title-main"><span class="sml-inline"><span class="kw">signature</span> <span class="sigid">GENERAL</span></span></div>
         <div id="layout-title-description"><p>A short description of the signature</p></div>
       </div> <!-- layout-title -->
     </div> <!-- layout-banner -->
@@ -31,27 +31,122 @@
     </div> <!-- layout-menu-box -->
     <div id="layout-content-box">
       <div id="layout-content">
+        <h2>Synopsis</h2>
 <pre class="sml-code">
-<span class="kw">signature</span> <span class="sigid">EXAMPLE</span> <span class="p">=</span>
+<span class="kw">signature</span> <span class="sigid">GENERAL</span>
+<span class="kw">structure</span> <span class="strid">General</span> <span class="p">:</span> <span class="sigid">GENERAL</span>
+</pre>
+        <p>
+        The structure General defines exceptions, datatypes, and functions which are used
+        throughout the SML Basis Library, and are useful in a wide range of programs.
+        </p>
+        <p>
+        All of the types and values defined in General are available unqualified at the top-level.
+        </p>
+        <h2>Interface</h2>
+<pre class="sml-code">
+<span class="kw">signature</span> <span class="sigid">GENERAL</span> <span class="p">=</span>
   <span class="kw">sig</span>
-    <span class="kw">datatype</span> <span class="varid">aType</span>
-      <span class="p">=</span> <span class="conid">CON1</span> <span class="kw">of</span> <span class="tyid">aType</span> <span class="p">*</span> <span class="tyid">aType</span>
-      <span class="p">|</span> <span class="conid">CON2</span>
-    <span class="kw">val</span> <span class="varid">aVal</span> <span class="p">:</span> <span class="tyid">aType</span>
-    <span class="kw">exception</span> <span class="exnid">AnException</span>
+    <span class="kw">eqtype</span> <span class="tyid">unit</span>
+    <span class="kw">type</span> <span class="tyid">exn</span>
+
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Bind">Bind</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Match">Match</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Chr">Chr</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Div">Div</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Domain">Domain</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Fail">Fail</a></span> <span class="kw">of</span> <span class="tyid">string</span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Overflow">Overflow</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Size">Size</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Span">Span</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Subscript">Subscript</a></span>
+
+    <span class="kw">val</span> <span class="varid">exnName</span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+    <span class="kw">val</span> <span class="varid">exnMessage</span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+
+    <span class="kw">datatype</span> <span class="tyid">order</span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span>
+
+    <span class="kw">val</span> <span class="varid">!</span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid">:=</span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">*</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
+    <span class="kw">val</span> <span class="varid">o</span> <span class="p">:</span> (<span class="tyvar">'b</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>) <span class="p">*</span> (<span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'b</span>) <span class="p">-&gt;</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>
+    <span class="kw">val</span> <span class="varid">before</span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">*</span> <span class="tyid">unit</span> <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid">ignore</span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
   <span class="kw">end</span>
 </pre>
-
-        <h2><a name="types"></a>Types</h2>
+        <h2>Description</h2>
           <dl>
-            <dt><span class="sml-inline"><span class="kw">datatype</span> <span class="sml-inline">aType</span></span></dt>
-            <dd>
-              The type of binary trees.
-            </dd>
+	    <dt><span class="sml-inline"><a name="TY:unit"></a><span class="kw">eqtype</span> <span class="tyid">unit</span></span></dt>
+	    <dd><p>
+	      The type containing a single value denoted (), which is typically used as a trivial
+	      argument or as a return value for a side-effecting function.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="TY:exn"></a><span class="kw">type</span> <span class="tyid">exn</span></span></dt>
+	    <dd><p>
+	      The type of values transmitted when an exception is raised and handled.
+	      This type is special in that it behaves like a datatype with an extensible set of data constructors,
+	      where new constructors are created by exception declarations.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Bind"></a><span class="kw">exception</span> <span class="exid">Bind</span></span></dt>
+	    <dd><p>
+	      Exception indicating that pattern matching failed in a val binding.
+	      This occurs when the matched value is not an instance of the left-hand-side pattern.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Match"></a><span class="kw">exception</span> <span class="exid">Match</span></span></dt>
+	    <dd><p>
+	      Exceptions indicating that pattern matching failed in a case expression or function
+	      application. This occurs when the matched value is not an instance of any of the
+	      supplied patterns.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Chr"></a><span class="kw">exception</span> <span class="exid">Chr</span></span></dt>
+	    <dd><p>
+	      The exception indicating an attempt to create a character with a code outside the range
+	      supported by the underlying character type (see CHAR.chr).
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Div"></a><span class="kw">exception</span> <span class="exid">Div</span></span></dt>
+	    <dd><p>
+	      The exception indicating an attempt to divide by zero. It replaces the Mod exception required by the SML'90 Definition.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Domain"></a><span class="kw">exception</span> <span class="exid">Domain</span></span></dt>
+	    <dd><p>
+	      The exception indicating that the argument of a mathematical function is outside the domain of the function.
+	      It is raised by functions in structures matching the MATH or INT_INF signatures.
+	      It replaces the Sqrt and Ln exceptions required by the SML'90 Definition.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Fail"></a><span class="kw">exception</span> <span class="exid">Fail</span> <span class="kw">of</span> <span class="tyid">string</span></span></dt>
+	    <dd><p>
+	      A general-purpose exception used to signify the failure of an operation. It is not raised by any function in the SML Basis Library,
+	      but is provided for use by users and user-defined libraries.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Overflow"></a><span class="kw">exception</span> <span class="exid">Overflow</span></span></dt>
+	    <dd><p>
+	      The exception indicating that the result of an arithmetic function is not representable, in particular, is too large.
+	      It replaces the Abs, Exp, Neg, Prod, Quot, and Sum exceptions required by the SML'90 Definition.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Size"></a><span class="kw">exception</span> <span class="exid">Size</span></span></dt>
+	    <dd><p>
+	      The exception indicating an attempt to create an aggregate data structure (such as an array, string, or vector) whose size is too large or negative.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Span"></a><span class="kw">exception</span> <span class="exid">Span</span></span></dt>
+	    <dd><p>
+	      The exception indicating an attempt to apply SUBSTRING.span to two incompatible substrings.
+	    </p></dd>
+
+	    <dt><span class="sml-inline"><a name="EXN:Subscript"></a><span class="kw">exception</span> <span class="exid">Subscript</span></span></dt>
+	    <dd><p>
+	      The exception indicating that an index is out of range, typically arising when the
+	      program is accessing an element in an aggregate data structure (such as a list, string, array, or vector).
+	    </p></dd>
           </dl>
-        <h2><a name="exceptions"></a>Exceptions</h2>
-        <h2><a name="values"></a>Values</h2>
-        </div>
       </div> <!-- layout-content -->
     </div> <!-- layout-content-box -->
     <div id="layout-footer-box">
