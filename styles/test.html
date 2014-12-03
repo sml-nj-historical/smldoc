@@ -22,11 +22,28 @@
       <div id="layout-menu">
         <div class="layout-menu-item1" >&#187;<a href="#top">Home</a></div>
         <div class="layout-menu-item1" >&#187;Types</div>
-        <div class="layout-menu-item2"><span class="sml-inline">aType</span></div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="tyid"><a href="#TY:exn">exn</a></span></span></div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="tyid"><a href="#TY:order">order</a></span></span></div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="tyid"><a href="#TY:unit">unit</a></span></span></div>
         <div class="layout-menu-item1" >&#187;Exceptions</div>
-        <div class="layout-menu-item2"><span class="sml-inline">AnException</span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Bind">Bind</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Chr">Chr</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Div">Div</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Domain">Domain</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Fail">Fail</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Match">Match</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Overflow">Overflow</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Size">Size</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Span">Span</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Subscript">Subscript</a></span></span></div>
         <div class="layout-menu-item1" >&#187;Values</div>
-        <div class="layout-menu-item2"><span class="sml-inline">aVal</span></div>
+          <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:!">!</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL::=">:=</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:before">before</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:exnMessage">exnMessage</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:exnName">exnName</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:ignore">ignore</a></span></span></div>
+	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:o">o</a></span></span></div>
       </div> <!-- layout-menu -->
     </div> <!-- layout-menu-box -->
     <div id="layout-content-box">
@@ -47,8 +64,8 @@
 <pre class="sml-code">
 <span class="kw">signature</span> <span class="sigid">GENERAL</span> <span class="p">=</span>
   <span class="kw">sig</span>
-    <span class="kw">eqtype</span> <span class="tyid">unit</span>
-    <span class="kw">type</span> <span class="tyid">exn</span>
+    <span class="kw">eqtype</span> <span class="tyid"><a href="#TY:unit">unit</a></span>
+    <span class="kw">type</span> <span class="tyid"><a href="#TY:exn">exn</a></span>
 
     <span class="kw">exception</span> <span class="exid"><a href="#EXN:Bind">Bind</a></span>
     <span class="kw">exception</span> <span class="exid"><a href="#EXN:Match">Match</a></span>
@@ -61,16 +78,16 @@
     <span class="kw">exception</span> <span class="exid"><a href="#EXN:Span">Span</a></span>
     <span class="kw">exception</span> <span class="exid"><a href="#EXN:Subscript">Subscript</a></span>
 
-    <span class="kw">val</span> <span class="varid">exnName</span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
-    <span class="kw">val</span> <span class="varid">exnMessage</span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:exnName">exnName</a></span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:exnMessage">exnMessage</a></span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
 
-    <span class="kw">datatype</span> <span class="tyid">order</span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span>
+    <span class="kw">datatype</span> <span class="tyid"><a href="#TY:order">order</a></span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span>
 
-    <span class="kw">val</span> <span class="varid">!</span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">-&gt;</span> <span class="tyvar">'a</span>
-    <span class="kw">val</span> <span class="varid">:=</span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">*</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
-    <span class="kw">val</span> <span class="varid">o</span> <span class="p">:</span> (<span class="tyvar">'b</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>) <span class="p">*</span> (<span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'b</span>) <span class="p">-&gt;</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>
-    <span class="kw">val</span> <span class="varid">before</span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">*</span> <span class="tyid">unit</span> <span class="p">-&gt;</span> <span class="tyvar">'a</span>
-    <span class="kw">val</span> <span class="varid">ignore</span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:!">!</a></span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL::=">:=</a></span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">*</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:o">o</a></span> <span class="p">:</span> (<span class="tyvar">'b</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>) <span class="p">*</span> (<span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'b</span>) <span class="p">-&gt;</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:before">before</a></span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">*</span> <span class="tyid">unit</span> <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:ignore">ignore</a></span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
   <span class="kw">end</span>
 </pre>
         <h2>Description</h2>
@@ -146,6 +163,45 @@
 	      The exception indicating that an index is out of range, typically arising when the
 	      program is accessing an element in an aggregate data structure (such as a list, string, array, or vector).
 	    </p></dd>
+
+	    <dt><a name="VAL:exnName"></a><span class="sml-inline">exnName ex</span></dt>
+	    <dd><p>
+	      returns a name for the exception ex. The name returned may be that of any exception constructor aliasing with ex.
+	      For instance,
+<pre class="sml-code">
+<span class="kw">let</span> <span class="kw">exception</span> E1<span class="p">;</span>
+    <span class="kw">exception</span> E2 <span class="p">=</span> E1 
+<span class="kw">in</span> exnName E2 <span class="kw">end</span>
+</pre>
+	      might evaluate to "E1" or "E2". 
+	    </p></dd>
+<!--
+exnMessage ex
+returns a message corresponding to exception ex. The precise format of the message may vary between implementations and locales, but will at least contain the string exnName ex.
+Example:
+exnMessage Div = "Div"
+exnMessage (OS.SysErr ("No such file", NONE)) = 
+  "OS.SysErr \"No such file\""
+
+
+datatype order = LESS | EQUAL | GREATER
+Values of type order are used when comparing elements of a type that has a linear ordering. 
+
+! re
+returns the value referred to by the reference re. 
+
+re := a
+makes the reference re refer to the value a. 
+
+f o g
+is the function composition of f and g. Thus, (f o g) a is equivalent to f(g a). 
+
+a before b
+returns a. It provides a notational shorthand for evaluating a, then b, before returning the value of a. 
+
+ignore a
+returns (). The purpose of ignore is to discard the result of a computation, returning () instead. This is useful, for example, when a higher-order function, such as List.app, requires a function returning unit, but the function to be used returns values of some other type. 
+-->
           </dl>
       </div> <!-- layout-content -->
     </div> <!-- layout-content-box -->
