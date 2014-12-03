@@ -13,7 +13,7 @@
     <div id="layout-banner-spacer"></div>
     <div id="layout-banner">
       <div id="layout-title">
-        <div id="layout-title-main"><span class="sml-inline"><span class=".kw">signature</span> Example</span></div>
+        <div id="layout-title-main"><span class="sml-inline"><span class="kw">signature</span> <span class="sigid">EXAMPLE</span></span></div>
         <div id="layout-title-description"><p>A short description of the signature</p></div>
       </div> <!-- layout-title -->
     </div> <!-- layout-banner -->
@@ -22,7 +22,9 @@
       <div id="layout-menu">
         <div class="layout-menu-item1" >&#187;<a href="#top">Home</a></div>
         <div class="layout-menu-item1" >&#187;Types</div>
+        <div class="layout-menu-item2"><span class="sml-inline">aType</span></div>
         <div class="layout-menu-item1" >&#187;Exceptions</div>
+        <div class="layout-menu-item2"><span class="sml-inline">AnException</span></div>
         <div class="layout-menu-item1" >&#187;Values</div>
         <div class="layout-menu-item2"><span class="sml-inline">aVal</span></div>
       </div> <!-- layout-menu -->
@@ -31,15 +33,26 @@
       <div id="layout-content">
         <div class="sml-code">
 <pre>
-<span class="kw">signature</span> Example <span class="p">=</span>
+<span class="kw">signature</span> <span class="sigid">EXAMPLE</span> <span class="p">=</span>
   <span class="kw">sig</span>
-    
+    <span class="kw">datatype</span> <span class="varid">aType</span>
+      <span class="p">=</span> <span class="conid">CON1</span> <span class="kw">of</span> <span class="tyid">aType</span> <span class="p">*</span> <span class="tyid">aType</span>
+      <span class="p">|</span> <span class="conid">CON2</span>
+    <span class="kw">val</span> <span class="varid">aVal</span> <span class="p">:</span> <span class="tyid">aType</span>
+    <span class="kw">exception</span> <span class="exnid">AnException</span>
   <span class="kw">end</span>
 </pre>
+        </div>
 
         <h2><a name="types"></a>Types</h2>
+          <dl>
+            <dt><span class="sml-inline"><span class="kw">datatype</span> <span class="sml-inline">aType</span></span></dt>
+            <dd>
+              The type of binary trees.
+            </dd>
+          </dl>
         <h2><a name="exceptions"></a>Exceptions</h2>
-        <h2><a name="values"></a>Exceptions</h2>
+        <h2><a name="values"></a>Values</h2>
         </div>
       </div> <!-- layout-content -->
     </div> <!-- layout-content-box -->
