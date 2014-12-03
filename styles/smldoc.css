@@ -3,42 +3,36 @@
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  */
-
 /***** Layout *****/
-
-
 body {
   font-family: Georgia,serif;
-  background-color: #cae5ff;
+  background-color: #ffffff;
   margin: 0;
   padding: 0;
 }
-
-#layout-top-mask {  /* masks out scrolling material */
+#layout-top-mask {
+  /* masks out scrolling material */
   position: fixed;
   top: 0px;
   left: 0px;
   height: 25px;
   width: 100%;
-  background-color: #cae5ff;
+  background-color: #ffffff;
   z-index: 1;
 }
-
 #layout-main {
   margin: 1em 1em 1em 1em;
 }
-
 #layout-banner-spacer {
   position: relative;
   width: 100%;
   height: 200px;
   clear: both;
 }
-
 #layout-banner {
   margin: 0;
   padding: 20px;
-  background-color: #6699cc;
+  background-color: silver;
   font-family: Arial, Helvetica, Geneva, sans-serif;
   text-align: left;
   -webkit-border-top-left-radius: 1em;
@@ -54,78 +48,70 @@ body {
   right: 1em;
   z-index: 2;
 }
-
 #layout-title {
   height: 160px;
 }
-
 #layout-title-main {
   font-size: 4.8em;
   margin: 0 0 5px;
-  color: #000099;
+  color: #000000;
 }
-
 #layout-title-description {
   font-size: 2.2em;
   margin: 0;
-  color: #000099;
+  color: #000000;
 }
-
 #layout-menu-box {
   position: fixed;
   left: 1em;
   width: 160px;
   height: 100%;
   z-index: 2;
-  background-color: #6699cc;
+  background-color: silver;
 }
-
 #layout-menu {
   height: 100%;
   font-size: 1.0em;
-  font-family: Arial,Helvetica,sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
   padding-left: 15px;
   padding-right: 0.8em;
 }
-
 .layout-menu-item1 {
-  background-color: #6699cc;
-  color: #000099;
+  background-color: silver;
+  color: #527bbd;
 }
-
 .layout-menu-item2 {
-  background-color: #6699cc;
-  color: #000099;
+  background-color: silver;
+  color: #527bbd;
   padding-left: 1em;
 }
-
-.layout-menu-item1 a, .layout-menu-item2 a {
+.layout-menu-item1 a,
+.layout-menu-item2 a {
   line-height: 2em;
   margin-left: 0.5em;
   text-decoration: none;
 }
-
-.layout-menu-item1 a:link, .layout-menu-item1 a:visited {
-  color: #000099;
+.layout-menu-item1 a:link,
+.layout-menu-item1 a:visited {
+  color: #527bbd;
 }
-
 .layout-menu-item1 a:hover {
-  color: #99ccff;
+  color: #527bbd;
 }
-
+.layout-menu-item2 a:hover {
+  color: #527bbd;
+}
 #layout-content-box {
   margin-left: 160px;
   z-index: 0;
 }
-
 #layout-content {
   font-size: 1.2em;
   padding-top: 0.2em;
   padding-left: 1.0em;
   padding-right: 0.4em;
 }
-
 #layout-footer-box {
   margin-left: 160px;
   margin-top: 4.0em;
@@ -133,52 +119,86 @@ body {
   padding-right: 0.4em;
   padding-top: 0.5em;
 }
-
 #layout-footer {
-  border-top: 2px solid #527bbd;
+  border-top: 2px solid silver;
 }
 #layout-footer-text {
   float: left;
   font-size: 0.8em;
   padding-top: 0.2em;
   padding-bottom: 0.5em;
-  border-bottom: 2px solid #527bbd;
+  border-bottom: 2px solid silver;
   margin-bottom: 1em;
 }
-
 /***** Styles for SML code *****/
-
-.sml-inlne {							/* inline SML code */
+.sml-inlne {
+  /* inline SML code */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
-  color: #6c71c4;
+  color: #f2f2f2;
 }
-
 pre {
   font-family: "Courier New", Courier, monospace;
   font-size: inherit;
-  color: #6c71c4;
+  color: #f2f2f2;
   padding: 0;
   margin: 0;
 }
-
-.sml-code {							/* code display */
+.sml-code {
+  /* code display */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
-  color: #6c71c4;
-  background: #dcdcdc;
+  color: navy;
+  background: #f2f2f2;
   padding: 0;
   margin: 0;
 }
-.sml-code .kw { font-weight: bold; color: #268bd2; }		/* keywords */
-.sml-code .com { color: #dc322f; font-style: italic; }		/* comments */
-.sml-code .str { color: #b58900; }				/* string literal */
-.sml-code .num { color: #b58900; }				/* numeric literal */
-.sml-code .p { color: #6c71c4; }				/* punctuation */
-.sml-code .sigid { color: #6c71c4; }				/* bound signature ID */
-.sml-code .strid { color: #6c71c4; }				/* bound module/functor ID */
-.sml-code .tv { color: #6c71c4; }				/* type variable */
-.sml-code .tyid { color: #6c71c4; }				/* bound type ID */
-.sml-code .conid { color: #6c71c4; }				/* bound constructor ID */
-.sml-code .exnid { color: #6c71c4; }				/* bound exception ID */
-.sml-code .varid { color: #6c71c4; }				/* bound value ID */
+.sml-code .kw {
+  font-weight: bold;
+  color: #008000;
+}
+/* keywords */
+.sml-code .com {
+  color: #408080;
+  font-style: italic;
+}
+/* comments */
+.sml-code .str {
+  color: #ba2121;
+}
+/* string literal */
+.sml-code .num {
+  color: #666666;
+}
+/* numeric literal */
+.sml-code .p {
+  color: navy;
+}
+/* punctuation */
+.sml-code .sigid {
+  color: #0000ff;
+}
+/* bound signature ID */
+.sml-code .strid {
+  color: #0000ff;
+}
+/* bound module/functor ID */
+.sml-code .tv {
+  color: #aa22ff;
+}
+/* type variable */
+.sml-code .tyid {
+  color: navy;
+}
+/* bound type ID */
+.sml-code .conid {
+  color: #0000ff;
+}
+/* bound constructor ID */
+.sml-code .exnid {
+  color: #0000ff;
+}
+/* bound exception ID */
+.sml-code .varid {
+  color: navy;
+}

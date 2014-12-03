@@ -4,12 +4,13 @@
  * All rights reserved.
  */
 
-/***** Layout *****/
+@import (reference) "@{color-palette}";
 
+/***** Layout *****/
 
 body {
   font-family: Georgia,serif;
-  background-color: #cae5ff;
+  background-color: @color-background;
   margin: 0;
   padding: 0;
 }
@@ -20,7 +21,7 @@ body {
   left: 0px;
   height: 25px;
   width: 100%;
-  background-color: #cae5ff;
+  background-color: @color-background;
   z-index: 1;
 }
 
@@ -38,7 +39,7 @@ body {
 #layout-banner {
   margin: 0;
   padding: 20px;
-  background-color: #6699cc;
+  background-color: @color-banner-bg;
   font-family: Arial, Helvetica, Geneva, sans-serif;
   text-align: left;
   -webkit-border-top-left-radius: 1em;
@@ -62,13 +63,13 @@ body {
 #layout-title-main {
   font-size: 4.8em;
   margin: 0 0 5px;
-  color: #000099;
+  color: @color-title;
 }
 
 #layout-title-description {
   font-size: 2.2em;
   margin: 0;
-  color: #000099;
+  color: @color-subtitle;
 }
 
 #layout-menu-box {
@@ -77,7 +78,7 @@ body {
   width: 160px;
   height: 100%;
   z-index: 2;
-  background-color: #6699cc;
+  background-color: @color-banner-bg;
 }
 
 #layout-menu {
@@ -90,13 +91,13 @@ body {
 }
 
 .layout-menu-item1 {
-  background-color: #6699cc;
-  color: #000099;
+  background-color: @color-banner-bg;
+  color: @color-menu1;
 }
 
 .layout-menu-item2 {
-  background-color: #6699cc;
-  color: #000099;
+  background-color: @color-banner-bg;
+  color: @color-menu2;
   padding-left: 1em;
 }
 
@@ -107,11 +108,15 @@ body {
 }
 
 .layout-menu-item1 a:link, .layout-menu-item1 a:visited {
-  color: #000099;
+  color: @color-menu1;
 }
 
 .layout-menu-item1 a:hover {
-  color: #99ccff;
+  color:@color-menu1-hover;
+}
+
+.layout-menu-item2 a:hover {
+  color:@color-menu2-hover;
 }
 
 #layout-content-box {
@@ -135,14 +140,14 @@ body {
 }
 
 #layout-footer {
-  border-top: 2px solid #527bbd;
+  border-top: 2px solid @color-banner-bg;
 }
 #layout-footer-text {
   float: left;
   font-size: 0.8em;
   padding-top: 0.2em;
   padding-bottom: 0.5em;
-  border-bottom: 2px solid #527bbd;
+  border-bottom: 2px solid @color-banner-bg;
   margin-bottom: 1em;
 }
 
@@ -151,13 +156,13 @@ body {
 .sml-inlne {							/* inline SML code */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
-  color: #6c71c4;
+  color: @color-code-bg;
 }
 
 pre {
   font-family: "Courier New", Courier, monospace;
   font-size: inherit;
-  color: #6c71c4;
+  color: @color-code-bg;
   padding: 0;
   margin: 0;
 }
@@ -165,20 +170,20 @@ pre {
 .sml-code {							/* code display */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
-  color: #6c71c4;
-  background: #dcdcdc;
+  color: @color-code;
+  background: @color-code-bg;
   padding: 0;
   margin: 0;
 }
-.sml-code .kw { font-weight: bold; color: #268bd2; }		/* keywords */
-.sml-code .com { color: #dc322f; font-style: italic; }		/* comments */
-.sml-code .str { color: #b58900; }				/* string literal */
-.sml-code .num { color: #b58900; }				/* numeric literal */
-.sml-code .p { color: #6c71c4; }				/* punctuation */
-.sml-code .sigid { color: #6c71c4; }				/* bound signature ID */
-.sml-code .strid { color: #6c71c4; }				/* bound module/functor ID */
-.sml-code .tv { color: #6c71c4; }				/* type variable */
-.sml-code .tyid { color: #6c71c4; }				/* bound type ID */
-.sml-code .conid { color: #6c71c4; }				/* bound constructor ID */
-.sml-code .exnid { color: #6c71c4; }				/* bound exception ID */
-.sml-code .varid { color: #6c71c4; }				/* bound value ID */
+.sml-code .kw { font-weight: bold; color: @color-kw; }		/* keywords */
+.sml-code .com { color: @color-com; font-style: italic; }	/* comments */
+.sml-code .str { color: @color-string; }			/* string literal */
+.sml-code .num { color: @color-num; }				/* numeric literal */
+.sml-code .p { color: @color-punct; }				/* punctuation */
+.sml-code .sigid { color: @color-sigid; }			/* bound signature ID */
+.sml-code .strid { color: @color-strid; }			/* bound module/functor ID */
+.sml-code .tv { color: @color-tvarid; }				/* type variable */
+.sml-code .tyid { color: @color-tyid; }				/* bound type ID */
+.sml-code .conid { color: @color-conid; }			/* bound constructor ID */
+.sml-code .exnid { color: @color-exnid; }			/* bound exception ID */
+.sml-code .varid { color: @color-valid; }			/* bound value ID */
