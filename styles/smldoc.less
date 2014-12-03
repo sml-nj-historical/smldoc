@@ -151,39 +151,45 @@ body {
   margin-bottom: 1em;
 }
 
+pre {
+  font-family: "Courier New", Courier, monospace;
+  font-size: inherit;
+  color: @color-code;
+  background: @color-code-bg;
+  padding: 0;
+  margin: 0;
+}
+
 /***** Styles for SML code *****/
 
 .sml-inlne {							/* inline SML code */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
-  color: @color-code-bg;
+  color: @color-code;
+  whitespace: pre-wrap;
 }
 
-pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
-  color: @color-code-bg;
-  padding: 0;
-  margin: 0;
-}
-
-.sml-code {							/* code display */
+pre .sml-code {							/* code display */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
   color: @color-code;
   background: @color-code-bg;
   padding: 0;
   margin: 0;
+  whitespace: pre;
 }
-.sml-code .kw { font-weight: bold; color: @color-kw; }		/* keywords */
-.sml-code .com { color: @color-com; font-style: italic; }	/* comments */
-.sml-code .str { color: @color-string; }			/* string literal */
-.sml-code .num { color: @color-num; }				/* numeric literal */
-.sml-code .p { color: @color-punct; }				/* punctuation */
-.sml-code .sigid { color: @color-sigid; }			/* bound signature ID */
-.sml-code .strid { color: @color-strid; }			/* bound module/functor ID */
-.sml-code .tv { color: @color-tvarid; }				/* type variable */
-.sml-code .tyid { color: @color-tyid; }				/* bound type ID */
-.sml-code .conid { color: @color-conid; }			/* bound constructor ID */
-.sml-code .exnid { color: @color-exnid; }			/* bound exception ID */
-.sml-code .varid { color: @color-valid; }			/* bound value ID */
+
+.sml-code, .sml-inine {
+  .kw { font-weight: bold; color: @color-kw; }		/* keywords */
+  .com { color: @color-com; font-style: italic; }	/* comments */
+  .str { color: @color-string; }			/* string literal */
+  .num { color: @color-num; }				/* numeric literal */
+  .p { color: @color-punct; }				/* punctuation */
+  .sigid { color: @color-sigid; }			/* bound signature ID */
+  .strid { color: @color-strid; }			/* bound module/functor ID */
+  .tv { color: @color-tvarid; }				/* type variable */
+  .tyid { color: @color-tyid; }				/* bound type ID */
+  .conid { color: @color-conid; }			/* bound constructor ID */
+  .exnid { color: @color-exnid; }			/* bound exception ID */
+  .varid { color: @color-valid; }			/* bound value ID */
+};

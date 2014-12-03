@@ -153,52 +153,68 @@ pre {
   padding: 0;
   margin: 0;
 }
-.sml-code .kw {
+.sml-code,
+.sml-inine {
+  /* keywords */
+  /* comments */
+  /* string literal */
+  /* numeric literal */
+  /* punctuation */
+  /* bound signature ID */
+  /* bound module/functor ID */
+  /* type variable */
+  /* bound type ID */
+  /* bound constructor ID */
+  /* bound exception ID */
+  /* bound value ID */
+}
+.sml-code .kw,
+.sml-inine .kw {
   font-weight: bold;
   color: #008000;
 }
-/* keywords */
-.sml-code .com {
+.sml-code .com,
+.sml-inine .com {
   color: #408080;
   font-style: italic;
 }
-/* comments */
-.sml-code .str {
+.sml-code .str,
+.sml-inine .str {
   color: #ba2121;
 }
-/* string literal */
-.sml-code .num {
+.sml-code .num,
+.sml-inine .num {
   color: #666666;
 }
-/* numeric literal */
-.sml-code .p {
+.sml-code .p,
+.sml-inine .p {
   color: navy;
 }
-/* punctuation */
-.sml-code .sigid {
+.sml-code .sigid,
+.sml-inine .sigid {
   color: #0000ff;
 }
-/* bound signature ID */
-.sml-code .strid {
+.sml-code .strid,
+.sml-inine .strid {
   color: #0000ff;
 }
-/* bound module/functor ID */
-.sml-code .tv {
+.sml-code .tv,
+.sml-inine .tv {
   color: #aa22ff;
 }
-/* type variable */
-.sml-code .tyid {
+.sml-code .tyid,
+.sml-inine .tyid {
   color: navy;
 }
-/* bound type ID */
-.sml-code .conid {
+.sml-code .conid,
+.sml-inine .conid {
   color: #0000ff;
 }
-/* bound constructor ID */
-.sml-code .exnid {
+.sml-code .exnid,
+.sml-inine .exnid {
   color: #0000ff;
 }
-/* bound exception ID */
-.sml-code .varid {
+.sml-code .varid,
+.sml-inine .varid {
   color: navy;
 }
