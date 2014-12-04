@@ -35,6 +35,10 @@
 	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Size">Size</a></span></span></div>
 	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Span">Span</a></span></span></div>
 	  <div class="layout-menu-item2"><span class="sml-inline"><span class="exid"><a href="#EXN:Subscript">Subscript</a></span></span></div>
+        <div class="layout-menu-item1" >&#187;Constructors</div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="conid"><a href="#TY:order">EQUAL</a></span></span></div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="conid"><a href="#TY:order">GREATER</a></span></span></div>
+	    <div class="layout-menu-item2"><span class="sml-inline"><span class="conid"><a href="#TY:order">LESS</a></span></span></div>
         <div class="layout-menu-item1" >&#187;Values</div>
           <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL:!">!</a></span></span></div>
 	  <div class="layout-menu-item2"><span class="sml-inline"><span class="varid"><a href="#VAL::=">:=</a></span></span></div>
@@ -199,12 +203,12 @@ exnMessage (OS.SysErr ("No such file", NONE)) =
 
 	    <dt><a name="VAL:!"></a><span class="sml-inline"><span class="varid">!</span> re</span></dt>
 	    <dd><p>
-	      returns the value referred to by the reference re. 
+	      returns the value referred to by the reference <span class="sml-inline">re</span>. 
 	    </p></dd>
 
 	    <dt><a name="VAL::="></a><span class="sml-inline">re <span class="varid">:=</span> a</span></dt>
 	    <dd><p>
-	      makes the reference re refer to the value a. 
+	      makes the reference <span class="sml-inline">re</span> refer to the value <span class="sml-inline">a</span>. 
 	    </p></dd>
 
 	    <dt><a name="VAL:o"></a><span class="sml-inline">f <span class="varid">o</span> g</span></dt>
@@ -215,12 +219,18 @@ exnMessage (OS.SysErr ("No such file", NONE)) =
 
 	    <dt><a name="VAL:before"></a><span class="sml-inline">a <span class="varid">before</span> b</span></dt>
 	    <dd><p>
-	      returns a. It provides a notational shorthand for evaluating a, then b, before returning the value of a. 
+	      returns <span class="sml-inline">a</span>.
+	      It provides a notational shorthand for evaluating <span class="sml-inline">a</span>,
+	      then <span class="sml-inline">b</span>, before returning the value of <span class="sml-inline">a</span>. 
 	    </p></dd>
 
 	    <dt><a name="VAL:ignore"></a><span class="sml-inline"><span class="varid">ignore a</span></span></dt>
 	    <dd><p>
-	      returns (). The purpose of ignore is to discard the result of a computation, returning () instead. This is useful, for example, when a higher-order function, such as List.app, requires a function returning unit, but the function to be used returns values of some other type. 
+	      returns <span class="sml-inline">()</span>. The purpose of ignore is to discard the
+	      result of a computation, returning <span class="sml-inline">()</span> instead. This is
+	      useful, for example, when a higher-order function, such as <span class="sml-inline">List.app</span>,
+	      requires a function returning <span class="sml-inline">uni</span>t, but the function to
+	      be used returns values of some other type. 
 	    </p></dd>
           </dl>
       </div> <!-- layout-content -->
