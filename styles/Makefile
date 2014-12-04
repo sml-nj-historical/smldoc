@@ -19,3 +19,4 @@ PALETTE =	mlton-colors.less
 #
 smldoc.css:	smldoc.less $(PALETTE)
 	$(LESSC) $(LESSC_FLAGS) --global-var="color-palette=\"$(PALETTE)\"" smldoc.less > smldoc.css
+
