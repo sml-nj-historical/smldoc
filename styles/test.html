@@ -17,7 +17,6 @@
         <div id="layout-title-description"><p>A short description of the signature</p></div>
       </div> <!-- layout-title -->
     </div> <!-- layout-banner -->
-    <div class="clearer"></div>
     <div id="layout-menu-box">
       <div id="layout-menu">
         <div class="layout-menu-item1" >&#187;<a href="#top">Home</a></div>
@@ -91,8 +90,8 @@
   <span class="kw">end</span>
 </pre>
         <h2>Description</h2>
-          <dl>
-	    <dt><span class="sml-inline"><a name="TY:unit"></a><span class="kw">eqtype</span> <span class="tyid">unit</span></span></dt>
+          <dl class="spec-list">
+	    <dt><a name="TY:unit"></a><span class="sml-inline"><span class="kw">eqtype</span> <span class="tyid">unit</span></span></dt>
 	    <dd><p>
 	      The type containing a single value denoted (), which is typically used as a trivial
 	      argument or as a return value for a side-effecting function.
@@ -168,40 +167,61 @@
 	    <dd><p>
 	      returns a name for the exception ex. The name returned may be that of any exception constructor aliasing with ex.
 	      For instance,
+	    </p>
 <pre class="sml-code">
 <span class="kw">let</span> <span class="kw">exception</span> E1<span class="p">;</span>
     <span class="kw">exception</span> E2 <span class="p">=</span> E1 
 <span class="kw">in</span> exnName E2 <span class="kw">end</span>
 </pre>
+	    <p>
 	      might evaluate to "E1" or "E2". 
 	    </p></dd>
-<!--
-exnMessage ex
-returns a message corresponding to exception ex. The precise format of the message may vary between implementations and locales, but will at least contain the string exnName ex.
-Example:
+
+	    <dt><a name="VAL:exnMessage"></a><span class="sml-inline">exnMessage ex</span></dt>
+	    <dd><p>
+	      returns a message corresponding to exception ex.
+	      The precise format of the message may vary between implementations
+	      and locales, but will at least contain the string <span class="sml-inline">exnName ex</span>.
+	      Example:
+	    </p>
+<pre class="sml-code">
 exnMessage Div = "Div"
 exnMessage (OS.SysErr ("No such file", NONE)) = 
   "OS.SysErr \"No such file\""
+</pre>
+	    <p>
+	    </p></dd>
 
+	    <dt><a name="TY:order"></a><span class="sml-inline"><span class="kw">datatype</span> <span class="tyid">order</span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span></span></dt>
+	    <dd><p>
+	      Values of type order are used when comparing elements of a type that has a linear ordering.
+	    </p></dd>
 
-datatype order = LESS | EQUAL | GREATER
-Values of type order are used when comparing elements of a type that has a linear ordering. 
+	    <dt><a name="VAL:!"></a><span class="sml-inline"><span class="varid">!</span> re</span></dt>
+	    <dd><p>
+	      returns the value referred to by the reference re. 
+	    </p></dd>
 
-! re
-returns the value referred to by the reference re. 
+	    <dt><a name="VAL::="></a><span class="sml-inline">re <span class="varid">:=</span> a</span></dt>
+	    <dd><p>
+	      makes the reference re refer to the value a. 
+	    </p></dd>
 
-re := a
-makes the reference re refer to the value a. 
+	    <dt><a name="VAL:o"></a><span class="sml-inline">f <span class="varid">o</span> g</span></dt>
+	    <dd><p>
+	      is the function composition of <span class="sml-inline">f</span> and <span class="sml-inline">g</span>.
+	      Thus, <span class="sml-inline">(f o g)</span> a is equivalent to <span class="sml-inline">f(g a)</span>. 
+	    </p></dd>
 
-f o g
-is the function composition of f and g. Thus, (f o g) a is equivalent to f(g a). 
+	    <dt><a name="VAL:before"></a><span class="sml-inline">a <span class="varid">before</span> b</span></dt>
+	    <dd><p>
+	      returns a. It provides a notational shorthand for evaluating a, then b, before returning the value of a. 
+	    </p></dd>
 
-a before b
-returns a. It provides a notational shorthand for evaluating a, then b, before returning the value of a. 
-
-ignore a
-returns (). The purpose of ignore is to discard the result of a computation, returning () instead. This is useful, for example, when a higher-order function, such as List.app, requires a function returning unit, but the function to be used returns values of some other type. 
--->
+	    <dt><a name="VAL:ignore"></a><span class="sml-inline"><span class="varid">ignore a</span></span></dt>
+	    <dd><p>
+	      returns (). The purpose of ignore is to discard the result of a computation, returning () instead. This is useful, for example, when a higher-order function, such as List.app, requires a function returning unit, but the function to be used returns values of some other type. 
+	    </p></dd>
           </dl>
       </div> <!-- layout-content -->
     </div> <!-- layout-content-box -->
