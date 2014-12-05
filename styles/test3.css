@@ -1,0 +1,200 @@
+/* smldoc.css
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ */
+/***** Layout *****/
+body {
+  font-family: Georgia,serif;
+  background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+}
+#layout-top-mask {
+  /* masks out scrolling material */
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  height: 25px;
+  width: 100%;
+  background-color: #ffffff;
+  z-index: 1;
+}
+#layout-main {
+  margin: 1em 1em 1em 1em;
+}
+#layout-banner-spacer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  clear: both;
+}
+#layout-banner {
+  margin: 0;
+  padding: 20px;
+  background-color: silver;
+  font-family: Arial, Helvetica, Geneva, sans-serif;
+  text-align: left;
+  border-top-right-radius: 1em;
+  border-bottom-right-radius: 1em;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  z-index: 2;
+}
+#layout-title {
+  height: 160px;
+}
+#layout-title-main {
+  font-size: 4.8em;
+  color: #000000;
+}
+#layout-title-description {
+  font-size: 2.2em;
+  margin: 0;
+  color: #000000;
+}
+#layout-menu {
+  position: fixed;
+  width: 150px;
+  background-color: #DDD;
+  font-size: 21px;
+  overflow-y: auto;
+  margin-top: 215px;
+  padding-top: 15px;
+  top: 0;
+  bottom: 0;
+  left: 15px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+ul.menu1 {
+  padding-left: 0;
+  font-size: 0.7em;
+  font-weight: bold;
+  list-style-type: none;
+}
+
+ul.menu1 > li + li {
+  padding-top: 5px;
+}
+
+ul.menu2 {
+  padding-top: 5px;
+  padding-left: 15px;
+  font-size: 0.9em;
+  font-weight: bold;
+  list-style-type: none;
+}
+
+ul.menu2 > li {
+  padding-top: 5px;
+}
+
+ul.menu3 {
+  padding-left: 15px;
+  font-size: 0.9em;
+  list-style-type: none;
+}
+
+ul.menu3 > li {
+  padding-top: 3px;
+}
+
+#layout-content {
+  position: fixed;            
+  margin-left: 160px;
+  margin-top: 215px;
+  overflow-y: auto;
+  top: 0;
+  bottom: 0;
+  font-size: 1.1em;
+  padding-top: 0.2em;
+  padding-left: 1.0em;
+  padding-right: 0.4em;
+}
+
+#layout-footer {
+  margin-top: 4.0em;
+  padding-top: 0.5em;
+  padding-left: 1.0em;
+  padding-right: 0.4em;
+}
+
+#layout-footer-text {
+  float: left;
+  font-size: 0.8em;
+  padding-top: 0.2em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+  margin-bottom: 1em;
+}
+
+pre {
+  font-family: "Courier New", Courier, monospace;
+  color: navy;
+  background: #f2f2f2;
+  padding: 5px;
+  margin: 0;
+}
+/***** Styles for SML code *****/
+span.sml {
+  /* inline SML code */
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.0em;
+  color: navy;
+  whitespace: pre-wrap;
+}
+pre.sml {
+  /* code display */
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.8em;
+  color: navy;
+  background: #f2f2f2;
+  padding: 5px;
+  margin: 0;
+}
+.sml .kw {
+  font-weight: bold;
+  color: #008000;
+}
+.sml .com {
+  color: #408080;
+  font-style: italic;
+}
+.sml .str {
+  color: #ba2121;
+}
+.sml .num {
+  color: #666666;
+}
+.sml .p {
+  color: navy;
+}
+.sml .sigid {
+  color: #0000ff;
+}
+.sml .strid {
+  color: #0000ff;
+}
+.sml .tv {
+  color: #aa22ff;
+}
+.sml .tyid {
+  color: navy;
+}
+.sml .conid {
+  color: #0000ff;
+}
+.sml .exnid {
+  color: #0000ff;
+}
+.sml .varid {
+  color: navy;
+}
+.sml a {
+  color: inherit;
+  text-decoration: underline;
+}

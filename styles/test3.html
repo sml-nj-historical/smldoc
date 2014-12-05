@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+	"http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="smldoc">
+  <link rel="stylesheet" href="test3.css" type="text/css">
+  <title>smldoc test layout page</title>
+</head>
+<body>
+  <div id="layout-banner-spacer"></div>
+  <div id="layout-banner">
+    <div id="layout-title">
+      <div id="layout-title-main">SML Basis Library</div>
+      <div id="layout-title-description"><span class="sml"><span class="kw">signature</span> <span class="sigid">GENERAL</span></span></div>
+    </div> <!-- layout-title -->
+  </div> <!-- layout-banner -->
+  <div id="layout-menu">
+    <ul class="menu1">
+      <li><a href="#top">Home</a></li>
+      <li><span class="sml"><span class="sigid">GENERAL</span></span>
+	<ul class="menu2">
+	  <li>Types
+	    <ul class="menu3">
+	      <li><span class="sml"><span class="tyid"><a href="#TY:exn">exn</a></span></span></li>
+	      <li><span class="sml"><span class="tyid"><a href="#TY:order">order</a></span></span></li>
+	      <li><span class="sml"><span class="tyid"><a href="#TY:unit">unit</a></span></span></li>
+	    </ul>
+	  </li>
+	  <li>Exceptions
+	    <ul class="menu3">
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Bind">Bind</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Chr">Chr</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Div">Div</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Domain">Domain</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Fail">Fail</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Match">Match</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Overflow">Overflow</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Size">Size</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Span">Span</a></span></span></li>
+	      <li><span class="sml"><span class="exid"><a href="#EXN:Subscript">Subscript</a></span></span></li>
+	    </ul>
+	  </li>
+	  <li>Constructors
+	    <ul class="menu3">
+	      <li><span class="sml"><span class="conid"><a href="#TY:order">EQUAL</a></span></span></li>
+	      <li><span class="sml"><span class="conid"><a href="#TY:order">GREATER</a></span></span></li>
+	      <li><span class="sml"><span class="conid"><a href="#TY:order">LESS</a></span></span></li>
+	    </ul>
+	  </li>
+	  <li>Values
+	    <ul class="menu3">
+	      <li><span class="sml"><span class="varid"><a href="#VAL:!">!</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL::=">:=</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL:before">before</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL:exnMessage">exnMessage</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL:exnName">exnName</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL:ignore">ignore</a></span></span></li>
+	      <li><span class="sml"><span class="varid"><a href="#VAL:o">o</a></span></span></li>
+	    </ul>
+	  </li>
+	</ul>
+      </li>
+    </ul>
+  </div> <!-- layout-menu -->
+  <div id="layout-content">
+    <a name="top"></a>
+    <h2>Synopsis</h2>
+<pre class="sml">
+<span class="kw">signature</span> <span class="sigid">GENERAL</span>
+<span class="kw">structure</span> <span class="strid">General</span> <span class="p">:</span> <span class="sigid">GENERAL</span>
+</pre>
+    <p>
+    The structure General defines exceptions, datatypes, and functions which are used
+    throughout the SML Basis Library, and are useful in a wide range of programs.
+    </p>
+    <p>
+    All of the types and values defined in General are available unqualified at the top-level.
+    </p>
+    <h2>Interface</h2>
+<pre class="sml">
+<span class="kw">signature</span> <span class="sigid">GENERAL</span> <span class="p">=</span>
+  <span class="kw">sig</span>
+    <span class="kw">eqtype</span> <span class="tyid"><a href="#TY:unit">unit</a></span>
+    <span class="kw">type</span> <span class="tyid"><a href="#TY:exn">exn</a></span>
+
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Bind">Bind</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Match">Match</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Chr">Chr</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Div">Div</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Domain">Domain</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Fail">Fail</a></span> <span class="kw">of</span> <span class="tyid">string</span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Overflow">Overflow</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Size">Size</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Span">Span</a></span>
+    <span class="kw">exception</span> <span class="exid"><a href="#EXN:Subscript">Subscript</a></span>
+
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:exnName">exnName</a></span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:exnMessage">exnMessage</a></span> <span class="p">:</span> <span class="tyid">exn</span> <span class="p">-&gt;</span> <span class="tyid">string</span>
+
+    <span class="kw">datatype</span> <span class="tyid"><a href="#TY:order">order</a></span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span>
+
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:!">!</a></span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL::=">:=</a></span> <span class="p">:</span> <span class="tyvar">'a</span> ref <span class="p">*</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:o">o</a></span> <span class="p">:</span> (<span class="tyvar">'b</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>) <span class="p">*</span> (<span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'b</span>) <span class="p">-&gt;</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyvar">'c</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:before">before</a></span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">*</span> <span class="tyid">unit</span> <span class="p">-&gt;</span> <span class="tyvar">'a</span>
+    <span class="kw">val</span> <span class="varid"><a href="#VAL:ignore">ignore</a></span> <span class="p">:</span> <span class="tyvar">'a</span> <span class="p">-&gt;</span> <span class="tyid">unit</span>
+  <span class="kw">end</span>
+</pre>
+    <h2>Description</h2>
+    <dl class="spec-list">
+      <dt><a name="TY:unit"></a><span class="sml"><span class="kw">eqtype</span> <span class="tyid">unit</span></span></dt>
+      <dd><p>
+	The type containing a single value denoted (), which is typically used as a trivial
+	argument or as a return value for a side-effecting function.
+      </p></dd>
+
+      <dt><span class="sml"><a name="TY:exn"></a><span class="kw">type</span> <span class="tyid">exn</span></span></dt>
+      <dd><p>
+	The type of values transmitted when an exception is raised and handled.
+	This type is special in that it behaves like a datatype with an extensible set of data constructors,
+	where new constructors are created by exception declarations.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Bind"></a><span class="kw">exception</span> <span class="exid">Bind</span></span></dt>
+      <dd><p>
+	Exception indicating that pattern matching failed in a val binding.
+	This occurs when the matched value is not an instance of the left-hand-side pattern.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Match"></a><span class="kw">exception</span> <span class="exid">Match</span></span></dt>
+      <dd><p>
+	Exceptions indicating that pattern matching failed in a case expression or function
+	application. This occurs when the matched value is not an instance of any of the
+	supplied patterns.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Chr"></a><span class="kw">exception</span> <span class="exid">Chr</span></span></dt>
+      <dd><p>
+	The exception indicating an attempt to create a character with a code outside the range
+	supported by the underlying character type (see CHAR.chr).
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Div"></a><span class="kw">exception</span> <span class="exid">Div</span></span></dt>
+      <dd><p>
+	The exception indicating an attempt to divide by zero. It replaces the Mod exception required by the SML'90 Definition.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Domain"></a><span class="kw">exception</span> <span class="exid">Domain</span></span></dt>
+      <dd><p>
+	The exception indicating that the argument of a mathematical function is outside the domain of the function.
+	It is raised by functions in structures matching the MATH or INT_INF signatures.
+	It replaces the Sqrt and Ln exceptions required by the SML'90 Definition.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Fail"></a><span class="kw">exception</span> <span class="exid">Fail</span> <span class="kw">of</span> <span class="tyid">string</span></span></dt>
+      <dd><p>
+	A general-purpose exception used to signify the failure of an operation. It is not raised by any function in the SML Basis Library,
+	but is provided for use by users and user-defined libraries.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Overflow"></a><span class="kw">exception</span> <span class="exid">Overflow</span></span></dt>
+      <dd><p>
+	The exception indicating that the result of an arithmetic function is not representable, in particular, is too large.
+	It replaces the Abs, Exp, Neg, Prod, Quot, and Sum exceptions required by the SML'90 Definition.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Size"></a><span class="kw">exception</span> <span class="exid">Size</span></span></dt>
+      <dd><p>
+	The exception indicating an attempt to create an aggregate data structure (such as an array, string, or vector) whose size is too large or negative.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Span"></a><span class="kw">exception</span> <span class="exid">Span</span></span></dt>
+      <dd><p>
+	The exception indicating an attempt to apply SUBSTRING.span to two incompatible substrings.
+      </p></dd>
+
+      <dt><span class="sml"><a name="EXN:Subscript"></a><span class="kw">exception</span> <span class="exid">Subscript</span></span></dt>
+      <dd><p>
+	The exception indicating that an index is out of range, typically arising when the
+	program is accessing an element in an aggregate data structure (such as a list, string, array, or vector).
+      </p></dd>
+
+      <dt><a name="VAL:exnName"></a><span class="sml">exnName ex</span></dt>
+      <dd><p>
+	returns a name for the exception ex. The name returned may be that of any exception constructor aliasing with ex.
+	For instance,
+      </p>
+<pre class="sml">
+<span class="kw">let</span> <span class="kw">exception</span> E1<span class="p">;</span>
+    <span class="kw">exception</span> E2 <span class="p">=</span> E1 
+<span class="kw">in</span> exnName E2 <span class="kw">end</span>
+</pre>
+      <p>
+	might evaluate to "E1" or "E2". 
+      </p></dd>
+
+      <dt><a name="VAL:exnMessage"></a><span class="sml">exnMessage ex</span></dt>
+      <dd><p>
+	returns a message corresponding to exception ex.
+	The precise format of the message may vary between implementations
+	and locales, but will at least contain the string <span class="sml">exnName ex</span>.
+	Example:
+      </p>
+<pre class="sml">
+exnMessage Div = "Div"
+exnMessage (OS.SysErr ("No such file", NONE)) = 
+  "OS.SysErr \"No such file\""
+</pre>
+      <p>
+      </p></dd>
+
+      <dt><a name="TY:order"></a><span class="sml"><span class="kw">datatype</span> <span class="tyid">order</span> <span class="p">=</span> <span class="conid">LESS</span> <span class="p">|</span> <span class="conid">EQUAL</span> <span class="p">|</span> <span class="conid">GREATER</span></span></dt>
+      <dd><p>
+	Values of type order are used when comparing elements of a type that has a linear ordering.
+      </p></dd>
+
+      <dt><a name="VAL:!"></a><span class="sml"><span class="varid">!</span> re</span></dt>
+      <dd><p>
+	returns the value referred to by the reference <span class="sml">re</span>. 
+      </p></dd>
+
+      <dt><a name="VAL::="></a><span class="sml">re <span class="varid">:=</span> a</span></dt>
+      <dd><p>
+	makes the reference <span class="sml">re</span> refer to the value <span class="sml">a</span>. 
+      </p></dd>
+
+      <dt><a name="VAL:o"></a><span class="sml">f <span class="varid">o</span> g</span></dt>
+      <dd><p>
+	is the function composition of <span class="sml">f</span> and <span class="sml">g</span>.
+	Thus, <span class="sml">(f o g)</span> a is equivalent to <span class="sml">f(g a)</span>. 
+      </p></dd>
+
+      <dt><a name="VAL:before"></a><span class="sml">a <span class="varid">before</span> b</span></dt>
+      <dd><p>
+	returns <span class="sml">a</span>.
+	It provides a notational shorthand for evaluating <span class="sml">a</span>,
+	then <span class="sml">b</span>, before returning the value of <span class="sml">a</span>. 
+      </p></dd>
+
+      <dt><a name="VAL:ignore"></a><span class="sml"><span class="varid">ignore a</span></span></dt>
+      <dd><p>
+	returns <span class="sml">()</span>. The purpose of ignore is to discard the
+	result of a computation, returning <span class="sml">()</span> instead. This is
+	useful, for example, when a higher-order function, such as <span class="sml">List.app</span>,
+	requires a function returning <span class="sml">uni</span>t, but the function to
+	be used returns values of some other type. 
+      </p></dd>
+    </dl>
+    <div id="layout-footer">
+      <div id="layout-footer-text">
+	Last updated 2014-12-01 12:08:54 CDT
+      </div> <!-- layout-footer-text -->
+    </div> <!-- layout-footer -->
+  </div> <!-- layout-content -->
+</body>
+</html>
