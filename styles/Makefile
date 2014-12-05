@@ -15,8 +15,15 @@ LESSC_FLAGS =	--verbose
 #
 PALETTE =	mlton-colors.less
 
+# default layout dimensions and font sizes
+#
+LAYOUT =	default-layout.less
+
+LESSC_GLOBALS =	--global-var="palette=\"$(PALETTE)\"" \
+		--global-var="layout=\"$(LAYOUT)\""
+
 # build the CSS file
 #
 smldoc.css:	smldoc.less $(PALETTE)
-	$(LESSC) $(LESSC_FLAGS) --global-var="color-palette=\"$(PALETTE)\"" smldoc.less > smldoc.css
+	$(LESSC) $(LESSC_FLAGS) $(LESSC_GLOBALS) smldoc.less > smldoc.css
 
