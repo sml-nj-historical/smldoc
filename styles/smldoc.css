@@ -133,10 +133,9 @@ body {
 }
 pre {
   font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
   color: navy;
   background: #f2f2f2;
-  padding: 0;
+  padding: 5px;
   margin: 0;
 }
 /***** Styles for SML code *****/
@@ -153,9 +152,8 @@ pre .sml-code {
   font-size: 0.8em;
   color: navy;
   background: #f2f2f2;
-  padding: 0;
+  padding: 5px;
   margin: 0;
-  whitespace: pre;
 }
 .sml-code,
 .sml-inline {

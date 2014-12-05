@@ -10,7 +10,7 @@
 /***** Layout *****/
 
 body {
-  font-family: Georgia,serif;
+  font-family: @body-font-family;
   background-color: @color-background;
   margin: 0;
   padding: 0;
@@ -154,31 +154,29 @@ body {
 }
 
 pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
+  font-family: @code-font-family;
   color: @color-code;
   background: @color-code-bg;
-  padding: 0;
-  margin: 0;
+  padding: @pre-code-padding;
+  margin: @pre-code-margin;
 }
 
 /***** Styles for SML code *****/
 
 .sml-inline {							/* inline SML code */
-  font-family: "Courier New", Courier, monospace;
-  font-size: 0.9em;
+  font-family: @code-font-family;
+  font-size: @inline-code-font-size;
   color: @color-code;
   whitespace: pre-wrap;
 }
 
 pre .sml-code {							/* code display */
-  font-family: "Courier New", Courier, monospace;
-  font-size: 0.8em;
+  font-family: @code-font-family;
+  font-size: @pre-code-font-size;
   color: @color-code;
   background: @color-code-bg;
-  padding: 0;
-  margin: 0;
-  whitespace: pre;
+  padding: @pre-code-padding;
+  margin: @pre-code-margin;
 }
 
 .sml-code, .sml-inline {

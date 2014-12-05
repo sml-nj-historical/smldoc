@@ -24,6 +24,6 @@ LESSC_GLOBALS =	--global-var="palette=\"$(PALETTE)\"" \
 
 # build the CSS file
 #
-smldoc.css:	smldoc.less $(PALETTE)
+smldoc.css:	smldoc.less $(PALETTE) $(LAYOUT)
 	$(LESSC) $(LESSC_FLAGS) $(LESSC_GLOBALS) smldoc.less > smldoc.css
 
