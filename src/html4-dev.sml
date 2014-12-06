@@ -29,16 +29,13 @@ structure HTML4Dev : sig
     val styleEM : style
     val styleSTRONG : style
 
-  (* color text (using FONT element) *)
-    val color : string -> style
-
   (* hyper-text links and anchors *)
     val link : string -> style
     val anchor : string -> style
     val linkAnchor : {name : string, href : string} -> style
 
-    val openDev : {wid : int, textWid : int option} -> device
-    val done : device -> HTML4.text
+    val openDev : {wid : int, textWid : int option, pre : bool} -> device
+    val done : device -> HTML4.inline list
 
   end = struct
 
@@ -51,8 +48,9 @@ structure HTML4Dev : sig
     datatype device = DEV of {
 	lineWid : int,
 	textWid : int option,
-	emphStk	: (HTML4.text list * style) list ref,
-	txt : HTML4.text list ref
+	pre : bool,				(* if true, we don't need to convert #" " to "&nbsp;" *)
+	emphStk	: (HTML4.inline list * style) list ref,
+	txt : HTML4.inline list ref
       }
 
   (* return the current emphasis *)
@@ -61,27 +59,60 @@ structure HTML4Dev : sig
 	    | ((_, em)::r) => em
 	  (* end case *))
 
-  (* add PCDATA to the text list *)
-    fun pcdata (DEV{txt, ...}, s) = txt := HTML4.PCDATA s :: !txt
+  (* add an entity to the text list *)
+    fun entity (DEV{txt, ...}, s) = txt := HTML4.CDATA[HTML4.ENTITY s] :: !txt
 
-  (* replace the sequence of PCDATA elements at the head of the
-   * txt list with its concatenation.
+  (* add PCDATA to the text list *)
+    fun pcdata (DEV{txt, ...}, s) = txt := HTML4.CDATA[HTML4.PCDATA s] :: !txt
+
+  (* replace the sequence of CDATA elements at the head of the
+   * txt list with its concatenation.  We also concatenate adjacent
+   * PCDATA strings.
    *)
     fun concatTxt (DEV{txt, ...}) = let
-	  fun f ([], []) = []
-	    | f (HTML4.PCDATA s :: r, l) = f (r, s::l)
-	    | f (r, l) = HTML4.PCDATA(String.concat l) :: r
+	  fun gatherCData (HTML4.CDATA cdata :: r, cd) = gatherCData (r, cdata @ cd)
+	    | gatherCData (txt, []) = txt
+	    | gatherCData (txt, cd) = HTML4.CDATA(flatten cd) :: txt
+	  and flatten cd = (case f cd
+		 of ([], l) => l
+		  | (strs, l) => HTML4.PCDATA(concat strs) :: l
+		(* end case *))
+	  and f [] = ([], [])
+	    | f (HTML4.PCDATA s :: r) = let
+		val (strs, l) = f r
+		in
+		  (s::strs, l)
+		end
+	    | f (cd :: r) = ([], cd :: flatten r)
 	  in
-	    f (!txt, [])
+	    gatherCData (!txt, [])
 	  end
 
   (* are two styles the same? *)
-    fun sameStyle (s1 : style, s2) = (s1 = s2)
+    fun sameStyle (s1, s2) = (case (s1, s2)
+	   of (TT, TT) => true
+	    | (I, I) => true
+	    | (B, B) => true
+	    | (U, U) => true
+	    | (STRIKE, STRIKE) => true
+	    | (EM, EM) => true
+	    | (STRONG, STRONG) => true
+	    | (SPAN attrs1, SPAN attrs2) => true (* attrs will always be the same! *)
+	    | (A attrs1, A attrs2) => let
+		fun sameAttr ((a1, SOME(v1 : string)), (a2, SOME v2)) = Atom.same(a1, a2) andalso (v1 = v2)
+		  | sameAttr ((a1, NONE), (a2, NONE)) = Atom.same(a1, a2)
+		  | sameAttr _ = false
+		in
+		  ListPair.allEq sameAttr (attrs1, attrs2)
+		end
+	    | (STYS stys1, STYS stys2) =>
+		ListPair.allEq sameStyle (stys1, stys2)
+	    | _ => false
+	  (* end case *))
 
     fun wrapStyle (sty, [], tl') = tl'
       | wrapStyle (STYS[], tl, tl') = List.revAppend(tl, tl')
       | wrapStyle (sty, tl, tl') = let
-	  val tl = List.rev tl
 	  fun wrap (TT, t) = HTML4.TT([], t)
 	    | wrap (I, t) = HTML4.I([], t)
 	    | wrap (B, t) = HTML4.B([], t)
@@ -90,12 +121,12 @@ structure HTML4Dev : sig
 	    | wrap (EM, t) = HTML4.EM([], t)
 	    | wrap (STRONG, t) = HTML4.STRONG([], t)
 	    | wrap (SPAN attrs, t) = HTML4.SPAN(attrs, t)
-	    | wrap (A{name, href}, t) = HTML4.A(attrs, t)
+	    | wrap (A attrs, t) = HTML4.A(attrs, t)
 	    | wrap (STYS(sty::stys), t) =
 		wrap (sty, List.foldr (fn (sty, t) => [wrap(sty, t)]) t stys)
 	    | wrap (STYS[], _) = raise Fail "unexpected empty STYS list"
 	  in
-	    wrap(sty, t) :: tl'
+	    wrap(sty, List.rev tl) :: tl'
 	  end
 
   (* push/pop a style from the devices style stack.  A pop on an
@@ -121,13 +152,27 @@ structure HTML4Dev : sig
   (* the suggested maximum width of text on a line *)
     fun textWidth (DEV{textWid, ...}) = textWid
 
+    val nbsp = HTML4.ENTITY(Atom.atom "nbsp")
+
   (* output some number of spaces to the device *)
-    fun space (dev, n) =
-	  pcdata(dev, concat(List.tabulate (n, fn _ => "&nbsp;")))
+    fun space (DEV{pre, txt, ...}, n) = let
+	  val sp = (case (pre, n)
+		 of (true, 1) => [HTML4.PCDATA " "]
+		  | (true, _) => [HTML4.PCDATA(String.implode(List.tabulate(n, fn _ => #" ")))]
+		  | (false, 1) => [nbsp]
+		  | (false, _) => List.tabulate(n, fn _ => nbsp)
+		(* end case *))
+	  in
+	    txt := HTML4.CDATA sp :: !txt
+	  end
+
+    val nl = HTML4.CDATA[HTML4.PCDATA "\n"]
 
   (* output a new-line to the device *)
-    fun newline (dev as DEV{txt, ...}) =
-	  txt := HTML4.BR{clear=NONE} :: (concatTxt dev)
+    fun newline (dev as DEV{pre, txt, ...}) =
+	  if pre
+	    then txt := nl :: !txt
+	    else txt := nl :: HTML4.BR[] :: (concatTxt dev)
 
   (* output a string/character in the current style to the device *)
     val string = pcdata
@@ -148,22 +193,24 @@ structure HTML4Dev : sig
     val styleSTRIKE = STRIKE
     val styleEM = EM
     val styleSTRONG = STRONG
-    fun span cls = SPAN[HTML4Attrs.class cls]
-    fun link s = A[HTML4Attrs.href, s]
-    fun anchor s = A[HTML4Attrs.name, s]
+    fun styleClass cls = SPAN[HTML4Attrs.class cls]
+    fun link s = A[HTML4Attrs.href s]
+    fun anchor s = A[HTML4Attrs.name s]
     fun linkAnchor {name, href} = A[HTML4Attrs.href href, HTML4Attrs.name name]
 
-    fun openDev {wid, textWid} = DEV{
+    fun openDev {wid, textWid, pre} = DEV{
 	    txt = ref [],
 	    emphStk = ref [],
+	    pre = pre,
 	    lineWid = wid,
 	    textWid = textWid
 	  }
 
-    fun done (dev as DEV{emphStk = ref [], txt, ...}) = (case (concatTxt dev)
-	   of [t] => (txt := []; t)
-	    | l => (txt := []; HTML4.TextList(List.rev l))
-	  (* end case *))
+    fun done (dev as DEV{emphStk = ref [], txt, ...}) = let
+	  val l = concatTxt dev
+	  in
+	    txt := []; List.rev l
+	  end
       | done _ = raise Fail "device is not done yet"
 
   end; (* HTMLDev *)

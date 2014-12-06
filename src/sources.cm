@@ -1,0 +1,17 @@
+Library
+
+  structure HTML4Dev
+
+  structure Test
+
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/pp-lib.cm
+  html4/html4-lib.cm
+
+  html4-dev.sml
+
+  test.sml
+
