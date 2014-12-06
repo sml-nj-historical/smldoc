@@ -1,0 +1,44 @@
+(* html4-lib.cm
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * CM file for the HTML4 library.
+ *)
+
+Library
+
+  signature HTML4
+  structure HTML4
+  structure HTML4Attrs
+  structure HTML4Parser
+  structure HTML4Tokens
+  structure HTML4TokenUtils
+  structure HTML4Utils
+  structure PrHTML4
+
+is
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  html4.g : ml-antlr
+  html4.l : ml-ulex
+
+  html4-attr.g : ml-antlr
+  html4-attr.l : ml-ulex
+
+  html4-attrs.sml
+
+  html4-token-utils.sml
+  html4-utils.sml
+
+  html4.sig
+  html4.sml
+
+  html4-parser.sml
+  pr-html4.sml
+
+(* ______________________________________________________________________
+   End of html4-lib.cm
+   ______________________________________________________________________ *)
