@@ -59,11 +59,35 @@ structure HTML4Dev : sig
 	    | ((_, em)::r) => em
 	  (* end case *))
 
+    val splitAtSpecial = Substring.splitl (Char.notContains "<>&")
+
   (* add an entity to the text list *)
     fun entity (DEV{txt, ...}, s) = txt := HTML4.CDATA[HTML4.ENTITY s] :: !txt
 
-  (* add PCDATA to the text list *)
-    fun pcdata (DEV{txt, ...}, s) = txt := HTML4.CDATA[HTML4.PCDATA s] :: !txt
+  (* add PCDATA to the text list; we convert the characters <>& to entities *)
+    fun pcdata (DEV{txt, ...}, s) = let
+	  fun cvt (ss, pieces) = let
+		val (a, b) = splitAtSpecial ss
+		fun next (r, entity) = if (Substring.isEmpty a)
+		      then cvt (r, entity :: pieces)
+		      else cvt (r, entity :: HTML4.PCDATA(Substring.string a) :: pieces)
+		in
+		  case Substring.getc b
+		   of NONE => finish (a, pieces)
+		    | SOME(#"<", r) => next (r, HTML4Entities.lt)
+		    | SOME(#">", r) => next (r, HTML4Entities.gt)
+		    | SOME(#"&", r) => next (r, HTML4Entities.amp)
+		    | _ => raise Fail "bug in Substring.position"
+		  (* end case *)
+		end
+	  and finish (_, []) = [HTML4.PCDATA s]
+	    | finish (ss, pieces) = if (Substring.isEmpty ss)
+		then List.rev pieces
+		else List.rev (HTML4.PCDATA(Substring.string ss) :: pieces)
+	  val data = cvt (Substring.full s, [])
+	  in
+	    txt := HTML4.CDATA data :: !txt
+	  end
 
   (* replace the sequence of CDATA elements at the head of the
    * txt list with its concatenation.  We also concatenate adjacent
