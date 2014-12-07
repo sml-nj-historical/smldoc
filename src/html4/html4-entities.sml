@@ -18,5 +18,7 @@ structure HTML4Entities =
     val copy = HTML4.ENTITY(Atom.atom "copy")
     val reg = HTML4.ENTITY(Atom.atom "reg")
 
+(* TODO: add the full set of HTML entities *)
+
   end
 
