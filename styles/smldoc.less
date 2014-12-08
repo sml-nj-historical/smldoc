@@ -163,23 +163,27 @@ pre {
 
 /***** Styles for SML code *****/
 
-.sml-inline {							/* inline SML code */
-  font-family: @code-font-family;
-  font-size: @inline-code-font-size;
-  color: @color-code;
-  whitespace: pre-wrap;
+span {
+  .sml {						/* inline SML code */
+    font-family: @code-font-family;
+    font-size: @inline-code-font-size;
+    color: @color-code;
+    whitespace: pre-wrap;
+  }
 }
 
-pre .sml-code {							/* code display */
-  font-family: @code-font-family;
-  font-size: @pre-code-font-size;
-  color: @color-code;
-  background: @color-code-bg;
-  padding: @pre-code-padding;
-  margin: @pre-code-margin;
+pre {
+  .sml {						/* code display */
+    font-family: @code-font-family;
+    font-size: @pre-code-font-size;
+    color: @color-code;
+    background: @color-code-bg;
+    padding: @pre-code-padding;
+    margin: @pre-code-margin;
+  }
 }
 
-.sml-code, .sml-inline {
+.sml {
   .kw { font-weight: bold; color: @color-kw; }		/* keywords */
   .com { color: @color-com; font-style: italic; }	/* comments */
   .str { color: @color-string; }			/* string literal */
@@ -194,7 +198,8 @@ pre .sml-code {							/* code display */
   .varid { color: @color-valid; }			/* bound value ID */
 };
 
-.sml-code a {
+.sml a {
   color: inherit;
+  font: inherit;
   text-decoration: underline;
 };

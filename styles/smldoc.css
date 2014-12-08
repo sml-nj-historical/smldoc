@@ -5,7 +5,7 @@
  */
 /***** Layout *****/
 body {
-  font-family: Georgia,serif;
+  font-family: Georgia, serif;
   background-color: #ffffff;
   margin: 0;
   padding: 0;
@@ -139,14 +139,14 @@ pre {
   margin: 0;
 }
 /***** Styles for SML code *****/
-.sml-inline {
+span .sml {
   /* inline SML code */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.9em;
   color: navy;
   whitespace: pre-wrap;
 }
-pre .sml-code {
+pre .sml {
   /* code display */
   font-family: "Courier New", Courier, monospace;
   font-size: 0.8em;
@@ -155,8 +155,7 @@ pre .sml-code {
   padding: 5px;
   margin: 0;
 }
-.sml-code,
-.sml-inline {
+.sml {
   /* keywords */
   /* comments */
   /* string literal */
@@ -170,57 +169,46 @@ pre .sml-code {
   /* bound exception ID */
   /* bound value ID */
 }
-.sml-code .kw,
-.sml-inline .kw {
+.sml .kw {
   font-weight: bold;
   color: #008000;
 }
-.sml-code .com,
-.sml-inline .com {
+.sml .com {
   color: #408080;
   font-style: italic;
 }
-.sml-code .str,
-.sml-inline .str {
+.sml .str {
   color: #ba2121;
 }
-.sml-code .num,
-.sml-inline .num {
+.sml .num {
   color: #666666;
 }
-.sml-code .p,
-.sml-inline .p {
+.sml .p {
   color: navy;
 }
-.sml-code .sigid,
-.sml-inline .sigid {
+.sml .sigid {
   color: #0000ff;
 }
-.sml-code .strid,
-.sml-inline .strid {
+.sml .strid {
   color: #0000ff;
 }
-.sml-code .tv,
-.sml-inline .tv {
+.sml .tv {
   color: #aa22ff;
 }
-.sml-code .tyid,
-.sml-inline .tyid {
+.sml .tyid {
   color: navy;
 }
-.sml-code .conid,
-.sml-inline .conid {
+.sml .conid {
   color: #0000ff;
 }
-.sml-code .exnid,
-.sml-inline .exnid {
+.sml .exnid {
   color: #0000ff;
 }
-.sml-code .varid,
-.sml-inline .varid {
+.sml .varid {
   color: navy;
 }
-.sml-code a {
+.sml a {
   color: inherit;
+  font: inherit;
   text-decoration: underline;
 }
