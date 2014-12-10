@@ -16,7 +16,7 @@ Library
   structure HTML4Tokens
   structure HTML4TokenUtils
   structure HTML4Utils
-  structure PrHTML4
+  structure HTML4Print
 
 is
   $/basis.cm
@@ -34,9 +34,9 @@ is
   html4-attrs.sml
   html4-entities.sml
   html4-parser.sml
+  html4-print.sml
   html4-token-utils.sml
   html4-utils.sml
-  pr-html4.sml
 
 (* ______________________________________________________________________
    End of html4-lib.cm

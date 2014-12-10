@@ -11,6 +11,7 @@ structure HTML4Entities =
     val lt = HTML4.ENTITY(Atom.atom "lt")
     val gt = HTML4.ENTITY(Atom.atom "gt")
     val amp = HTML4.ENTITY(Atom.atom "amp")
+    val quot = HTML4.ENTITY(Atom.atom "quot")
     val cent = HTML4.ENTITY(Atom.atom "cent")
     val pound = HTML4.ENTITY(Atom.atom "pound")
     val yen = HTML4.ENTITY(Atom.atom "yen")

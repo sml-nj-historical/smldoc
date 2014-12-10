@@ -18,17 +18,19 @@ structure H4U = HTML4Utils
 
 structure HTML4AttrParser = HTML4AttrParseFn(HTML4AttrLexer)
 
-fun parseAttrsFromStream inStream =
-    let
-        val sourceMap = AntlrStreamPos.mkSourcemap ()
-        val lex = HTML4AttrLexer.lex sourceMap
-        val stream = HTML4AttrLexer.streamifyInstream inStream
-        val (result, _, _) = HTML4AttrParser.parse lex stream
-    in
-        if isSome result then valOf result else []
-    end
+fun parseAttrsFromStream inStream = let
+      val sourceMap = AntlrStreamPos.mkSourcemap ()
+      val lex = HTML4AttrLexer.lex sourceMap
+      val stream = HTML4AttrLexer.streamifyInstream inStream
+      in
+	case HTML4AttrParser.parse lex stream
+	 of (SOME result, _, _) => result
+	  | _ => []
+	(* end case *)
+      end
 
 fun parseAttrs inStr = parseAttrsFromStream (TextIO.openString inStr)
+(*DEBUG*)handle ex => (print(concat["parseAttrs: \"", String.toString inStr, "\"\n"]); raise ex)
 
 (* ____________________________________________________________ *)
 open HTML4Tokens
@@ -136,11 +138,10 @@ val frameset_tuple_list = [
 val endTagNameTest = Char.notContains " \t\r\n>"
 
 fun splitTagStart inStr =
-    Substring.splitl endTagNameTest (Substring.full inStr)
+      Substring.splitl endTagNameTest (Substring.full inStr)
 
 fun extractTag str = let
-      val (tagStart, _) = splitTagStart str
-      val tagNameChs = CharVectorSlice.full str
+      val (tagNameChs, _) = splitTagStart str
       val tagNameChs = (case CharVectorSlice.getItem tagNameChs
 	     of SOME(#"<", r) => (case CharVectorSlice.getItem r
 		   of SOME(#"/", r) => r

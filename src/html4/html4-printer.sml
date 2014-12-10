@@ -379,7 +379,7 @@ in
         ppTagAndChildren ppstrm ppFlow S.TH content
     and ppOptgroup_or_option ppstrm (OPTGROUP content) =
         ppTagAndChildren ppstrm
-	   (fn opt => ppTagAndChildren ppstrm ppCdata S.OPTION opt)
+	   (fn pstrm => fn opt => ppTagAndChildren ppstrm ppCdata S.OPTION opt)
 	   S.OPTGROUP content
       | ppOptgroup_or_option ppstrm (OPTION content) =
 	ppTagAndChildren ppstrm ppCdata S.OPTION content
