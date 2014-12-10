@@ -1,10 +1,10 @@
-(* pr-html4.sml
+(* html4-print.sml
  *
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
  *)
 
-structure PrHTML4 : sig
+structure HTML4Print : sig
 
     val prHTML : {
 	    putc    : char -> unit,
@@ -251,11 +251,13 @@ structure PrHTML4 : sig
 	  and prBlockOrScript (H.BlockOrScript_BLOCK blk) = prBlock blk
 	    | prBlockOrScript (H.BlockOrScript_SCRIPT script) = (prScript (outS, script); newline outS)
 	  and prFlowOrParamList content = let
-		fun pr (H.FlowOrParam_FLOW(H.Flow_BLOCK blk)) = raise Fail "FIXME"
-		  | pr (H.FlowOrParam_FLOW(H.Flow_INLINE txt)) = raise Fail "FIXME"
-		  | pr (H.FlowOrParam_PARAM param) = raise Fail "FIXME"
+		fun pr (H.FlowOrParam_FLOW(H.Flow_BLOCK blk), nl) = (
+			  if nl then () else newline outS; prBlock blk; true)
+		  | pr (H.FlowOrParam_FLOW(H.Flow_INLINE txt), _) = (prInline txt; false)
+		  | pr (H.FlowOrParam_PARAM param, _) = (prParam (outS, param); false)
 		in
-raise Fail "FIXME"
+		(* This function is always called after a newline *)
+		  ignore (List.foldl pr true content)
 		end
 	  in
 	    case element
