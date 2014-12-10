@@ -29,7 +29,7 @@ structure Test =
 		PP.closeStream ppStrm;
 		HTML4Dev.done dev)
 	  in
-	    PrHTML4.prHTML {
+	    HTML4Print.prHTML {
 		putc = fn c => TextIO.output1 (TextIO.stdOut, c),
 		puts = fn s => TextIO.output (TextIO.stdOut, s)
 	      } (H.HTML{
