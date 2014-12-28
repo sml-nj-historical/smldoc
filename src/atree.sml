@@ -12,12 +12,17 @@ structure ATree =
   (* raw documentation comment *)
     type doc = MarkupTokens.token list
 
-  (* identifiers *)
-    type id = string
+  (* identifiers; we annotate them with a property list to allow
+   * anchors and hrefs to be associated with them.
+   *)
+    datatype id = ID of {
+	name : string,
+	props : PropList.handle
+      }
 
   (* SML types *)
     datatype typ
-      = VARty of string
+      = VARty of id
       | CONty of (typ list * id)
       | FUNty of (typ * typ)
       | TUPLEty of typ list

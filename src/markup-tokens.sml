@@ -4,10 +4,10 @@
  * All rights reserved.
  *)
 
-strstructure MarkupTokens =
+structure MarkupTokens =
   struct
 
-    datatype token =
+    datatype token
       = EOF		(* end-of-file *)
       | BLANK		(* blank line *)
       | WS		(* whitespace (other than line breaks) *)
