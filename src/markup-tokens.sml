@@ -9,9 +9,6 @@ structure MarkupTokens =
 
     datatype token
       = EOF		(* end-of-file *)
-      | BLANK		(* blank line *)
-      | WS		(* whitespace (other than line breaks) *)
-      | EOL		(* end-of-line *)
     (* reserved IDs *)
       | KW_abstype | KW_and | KW_andalso | KW_as
       | KW_case
@@ -59,16 +56,11 @@ structure MarkupTokens =
     (* documentation comments *)
       | BLANKLN				(* blank line following/proceeding documentation comment *)
       | TEXT of string			(* non-whitespace text *)
-      | WS of string			(* whitespace *)
-    (* Text markup tkens *)
-      | BEGIN_CENTER of Atom.atom	(* '\begin{center}' *)
-      | END_CENTER of Atom.atom		(* '\end{center}' *)
-      | BEGIN_QUOTE of Atom.atom	(* '\begin{quote}' *)
-      | END_QUOTE of Atom.atom		(* '\end{quote}' *)
-      | BEGIN_ITEM of Atom.atom		(* '\begin{itemize}' *)
-      | END_ITEM of Atom.atom		(* '\end{itemize}' *)
-      | BEGIN_ENUM of Atom.atom		(* '\begin{enumerate}' *)
-      | END_ENUM of Atom.atom		(* '\end{enumerate}' *)
+      | WS of string			(* whitespace (other than line breaks) *)
+      | EOL				(* end-of-line *)
+    (* Text markup tokens *)
+      | BEGIN of Atom.atom		(* '\begin{xxx}' *)
+      | END of Atom.atom		(* '\end{xxx}' *)
       | ITEM				(* '\item' *)
       | BOLD				(* '\b{' *)
       | ITALIC				(* '\i{' *)
@@ -77,16 +69,7 @@ structure MarkupTokens =
       | CODE				(* '[' *)
       | CLOSE_CODE			(* ']' *)
     (* Documentation tags *)
-      | TAG_author			(* '@author' *)
-      | TAG_date			(* '@date' *)
-      | TAG_deprecated			(* '@deprecated' *)
-      | TAG_param			(* '@param' *)
-      | TAG_raise			(* '@raise' *)
-      | TAG_return			(* '@return' *)
-      | TAG_see				(* '@see' *)
-      | TAG_since			(* '@since' *)
-      | TAG_version			(* '@version' *)
-      | TAG_instance			(* '@instance' *)
+      | TAG of Atom.atom		(* "@xxx" tag *)
 
   end
 

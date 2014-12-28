@@ -9,6 +9,7 @@
 $defs(
     structure T = Tokens
     structure MT = MarkupTokens
+    structure SS = Substring
 
   (* markup token buffer for parsing documentation comments *)
     val markup : MT.token list ref = ref[]
@@ -166,6 +167,7 @@ $defs(
 <DC>{eol}		=> (addMarkup MT.NL; YYBEGIN DC_BOL; continue());
 
 <DC,DC_BOL>"*)"		=> (getMarkup())
+<DC>"@"([a-zA-Z0-9]+)	=> (addMarkup (MT.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE)))); continue());
 <DC>"@author"		=> (addMarkup MT.TAG_author; continue());
 <DC>"@deprecated"	=> (addMarkup MT.TAG_deprecated; continue());
 <DC>"@param"		=> (addMarkup MT.TAG_param; continue());
@@ -178,20 +180,20 @@ $defs(
 <DC>"@version"		=> (addMarkup MT.TAG_version; continue());
 
 
-<DC>"{[0-9]+"		=> (MT.SECTION(valOf(Int.fromString(String.extract(yytext, 1, NONE)))));
-<DC>"\b{"		=> (MT.BOLD);
-<DC>"\i{"		=> (MT.ITALIC);
-<DC>"\e{"		=> (MT.EMPH);
-<DC>"\begin{center}"	=> (MT.CENTER);
-<DC>"\end{center}"	=> (MT.CENTER);
-<DC>"\begin{quote}"	=> (MT.LEFT);
-<DC>"\end{quote}"	=> (MT.LEFT);
-<DC>"{R"		=> (MT.RIGHT);
-<DC>"\begin{itemize}"	=> (MT.ITEMIZE);
-<DC>"\end{itemize}"	=> (MT.ITEMIZE);
-<DC>"\begin{enumerate}"	=> (MT.ENUMERATE);
-<DC>"\end{enumerate}"	=> (MT.ENUMERATE);
-<DC>"\item"		=> (MT.ITEM);
-<DC>"}"			=> (MT.CLOSE);
-<DC>"["			=> (MT.CODE);
-<DC>"]"			=> (MT.CLOSE_CODE);
+<DC>"\b{"		=> (addMarkup MT.BOLD; continue());
+<DC>"\i{"		=> (addMarkup MT.ITALIC; continue());
+<DC>"\e{"		=> (addMarkup MT.EMPH; continue());
+<DC>"\begin{"[a-zA-Z0-9]*"}"
+			=> (
+			    addMarkup (MT.BEGIN(Atom.atom'(
+			      SS.slice(yysubstr, 7, SOME(SS.size yysubstr - 8)))));
+			    continue());
+<DC>"\end{"[a-zA-Z0-9]*"}"
+			=> (
+			    addMarkup (MT.END(Atom.atom'(
+			      SS.slice(yysubstr, 5, SOME(SS.size yysubstr - 6)))));
+			    continue());
+<DC>"\item"		=> (addMarkup MT.ITEM; continue());
+<DC>"}"			=> (addMarkup MT.CLOSE; continue());
+<DC>"["			=> (addMarkup MT.CODE; continue());
+<DC>"]"			=> (addMarkup MT.CLOSE_CODE; continue());

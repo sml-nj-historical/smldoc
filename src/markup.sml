@@ -12,15 +12,22 @@
 structure Markup =
   struct
 
-  (** @brief text elements in a SMLdoc comment *)
-    datatype elem
-      = Text of string		(** raw text *)
-      | Bold of text		(** boldfaced text *)
-      | Italic of text		(** italic text *)
-      | Code of code_elem list	(** source code *)
-      | Special of string	
+  (** a block of text *)
+    datatype text_block
+      = TB_Text of text
+      | TB_Style of Atom.atom * text_block list
+      | TB_List of Atom.atom * text_block list list
+      | TB_Blank
 
-  (**@brief elements in a code string *)
+  (** text elements in a SMLdoc comment *)
+    and text_elem
+      = TXT_B of text
+      | TXT_I of text
+      | TXT_E of text
+      | TXT_CODE of code_elem list
+      | TXT_CHARS of string
+
+  (** elements in a code string *)
     and code_elem
       = KW of string		(** keyword *)
       | PUNCT of string		(** punctuation *)
@@ -30,26 +37,25 @@ structure Markup =
       | LIT of string		(** numeric, character, and string literals *)
       | COM of string		(** comment *)
 
-    withtype text = elem list
+    and tag
+      = TAG_author of ??
+      | TAG_date of ??
+      | TAG_deprecated of ??
+      | TAG_param of ??
+      | TAG_raise of ??
+      | TAG_return of ??
+      | TAG_see of ??
+      | TAG_since of ??
+      | TAG_version of ??
+      | TAG_instance of ??
 
-  (** @brief a block of text, possibly proceeded by a tag *)
-    datatype block
-      = NoTag of text
-      | Author of string list
-      | Brief of text
-      | Copy of string list
-      | Deprecated of text
-      | File of string
-      | Param of string * text
-      | Raise of string * text
-      | Return of text
-      | Version of string
+    withtype text = text_elem list
 
-  (** @brief the representation of an SMLdoc comment.
-   **
-   ** An SMLdoc comment is organized into one or more tagged blocks.  A block is terminated
-   ** by either a blank line or by the occurance of a new tag.
-   **)
-    type comment = block list
+  (** the representation of an SMLdoc comment. **)
+    type comment = {
+	pre : bool,		(**< true for comments that come before their item *)
+	desc : text_block list,	(**< descriptive text *)
+	tags : tag list		(**< optional tags *)
+      }
 
   end
