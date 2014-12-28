@@ -9,7 +9,10 @@ is
   $/basis.cm
   $/smlnj-lib.cm
   $/pp-lib.cm
+  $/html4-lib.cm
+(*
   html4/html4-lib.cm
+*)
 
   html4-dev.sml
 
