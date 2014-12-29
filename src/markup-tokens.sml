@@ -29,6 +29,7 @@ structure MarkupTokens =
       | REAL of string			(* real literals *)
       | STRING of string		(* string literals *)
       | CHAR of string			(* character literals *)
+      | COM of string			(* SML comment *)
     (* documentation comments *)
       | BLANKLN				(* blank line following/proceeding documentation comment *)
       | TEXT of string			(* non-whitespace text *)

@@ -115,7 +115,10 @@ structure ParseMarkup : sig
 		  | SOME(T.TAG _, _) => NONE
 		  | SOME(tok as T.END _, _) => error (#1 ts, ["unexpected '", T.toString tok, "'"])
 		  | SOME(T.ITEM, _) => error (#1 ts, ["unexpected '\\item'"])
-		  | _ => ?? (* parse text *)
+		  | _ => (case parseText ts
+		       of ([], _) => expectedError (ts, "text")
+			| (txt, ts') => SOME(M.TB_Text txt, ts')
+		      (* end case *))
 		(* end case *))
 	(* parse "\begin{style}" ... "\end{style}" *)
 	  and parseStyleBlock (style, ts) = let
@@ -168,21 +171,46 @@ structure ParseMarkup : sig
 			  | _ => expectedError (ts', "'}'")
 			(* end case *)
 		      end
+		fun parse (ts, txt) = (case next ts
+		       of SOME(T.TEXT s, ts') => parse (ts', s::txt)
+			| SOME(T.WS ws, ts') => parse (ts', ws::txt)
+			| SOME(T.EOL, ts') => parse (ts', "\n"::txt)
+			| _ => SOME(M.TXT_CHARS(String.concat (List.rev txt)), ts)
+		      (* end case *))
 		in
 		  case next ts
-		   of SOME(T.BLANKLN, _) => NONE
-		    | SOME(T.TEXT s, ts') => ??
-		    | SOME(T.WS ws, ts') => ??
-		    | SOME(T.EOL, ts') => ??
+		   of SOME(T.TEXT s, ts') => parse (ts', [s])
+		    | SOME(T.WS ws, ts') => parse (ts', [ws])
+		    | SOME(T.EOL, ts') => parse (ts', ["\n"])
 		    | SOME(T.BOLD, ts') => style M.TXT_B ts'
 		    | SOME(T.ITALIC, ts') => style M.TXT_I ts'
 		    | SOME(T.EMPH, ts') => style M.TXT_EM ts'
 		    | SOME(T.CLOSE, ts') => unexpectedError (ts, "text element")
 		    | SOME(T.CODE, ts') => parseCode ts'
 		    | SOME(T.CLOSE_CODE, ts') => unexpectedError (ts, "text element")
+		    | _ => NONE
 		  (* end case *)
 		end
-	  and parseCode ts = ??
+	  and parseCode ts = let
+		fun parse (ts, toks) = (case next ts
+		       of SOME(T.CLOSE_CODE, ts') => SOME(M.TXT_CODE(List.rev toks), ts')
+			| SOME(T.KW kw, ts') => parse (ts', M.KW kw :: toks)
+			| SOME(T.SYM s, ts') => parse (ts', M.KW s :: toks)
+			| SOME(T.PUNCT p, ts') => parse (ts', M.PUNCT p :: toks)
+			| SOME(T.ID id, ts') => parse (ts', M.ID id :: toks)
+			| SOME(T.INT n, ts') => parse (ts', M.LIT n :: toks)
+			| SOME(T.WORD w, ts') => parse (ts', M.LIT w :: toks)
+			| SOME(T.REAL f, ts') => parse (ts', M.LIT f :: toks)
+			| SOME(T.STRING s, ts') => parse (ts', M.LIT s :: toks)
+			| SOME(T.CHAR c, ts') => parse (ts', M.LIT c :: toks)
+			| SOME(T.COM s, ts') => parse (ts', M.COM s :: toks)
+			| SOME(T.WS ws, ts') => parse (ts', M.WS ws :: toks)
+			| SOME(T.EOL, ts') => parse (ts', M.EOL :: toks)
+			| _ => unexpectedError (ts, "SML code")
+		      (* end case *))
+		in
+		  parse (ts, [])
+		end
 	  and parseTags ts = let
 		fun parse (ts, tags) = (case next ts
 		     of NONE => List.rev tags
@@ -242,7 +270,9 @@ structure ParseMarkup : sig
 		end
 	(* parse the rest of an author tag: "@author" <ws> <string> *)
 	  and parseAuthor ts = parseTagString ("author", M.TAG_author, ts)
-	(* parse the rest of an date tag: "@date" <ws> YYYY-MM-DD *)
+	(* parse the rest of a before tag: "@before" <ws> <version> <text> *)
+	  and parseBefore ts = raise Fail "@before unimplmented"
+	(* parse the rest of a date tag: "@date" <ws> YYYY-MM-DD *)
 	  and parseDate ts = (case next ts
 		 of SOME(T.TEXT s, ts') => let
 		      fun continue (tag, ts) = (case next ts
@@ -261,7 +291,7 @@ structure ParseMarkup : sig
 		      end
 		  | _ => error (#1 ts, ["malformed '@date' tag"])
 		(* end case *))
-	(* parse the rest of an instance tag: "@deprecated" <ws> <text> *)
+	(* parse the rest of a deprecated tag: "@deprecated" <ws> <text> *)
 	  and parseDeprecated ts = parseTagText (M.TAG_deprecated, ts)
 	(* parse the rest of an instance tag: "@instance" <ws> <longid> <ws> <text> *)
 	  and parseInstance ts = parseTagIdText ("instance", M.TAG_instance, ts)
@@ -273,7 +303,7 @@ structure ParseMarkup : sig
 	  and parseReturn ts = parseTagText (M.TAG_return, ts)
 	(* parse the rest of a see tag: "@see" <ws> [ <url> | <file> | <string> ] <ws> <text> *)
 	  and parseSee ts = raise Fail "@see unimplemented"
-	(* parse the rest of an since tag: "@since" <ws> <version> *)
+	(* parse the rest of a since tag: "@since" <ws> <version> *)
 	  and parseSince ts = parseTagString ("since", M.TAG_since, ts)
 	(* parse the rest of a version tag: "@version" <ws> <version> *)
 	  and parseVersion ts = parseTagString ("version", M.TAG_version, ts)

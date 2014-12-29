@@ -29,13 +29,13 @@ structure Markup =
 
   (** elements in a code string *)
     and code_elem
-      = KW of string		(** keyword *)
-      | PUNCT of string		(** punctuation *)
-      | ID of string		(** identifier *)
-      | WS of string		(** white space (tabs are expanded to spaces) *)
-      | EOL			(** end-of-line *)
+      = KW of Atom.atom		(** keyword (including reserved symbols) *)
+      | PUNCT of Atom.atom	(** punctuation *)
+      | ID of Atom.atom		(** identifier *)
       | LIT of string		(** numeric, character, and string literals *)
       | COM of string		(** comment *)
+      | WS of string		(** white space (tabs are expanded to spaces) *)
+      | EOL			(** end-of-line *)
 
     and tag
       = TAG_author of string
