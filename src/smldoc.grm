@@ -4,6 +4,8 @@
  * All rights reserved.
  *)
 
+%name SMLDoc;
+
 %tokens
     : KW_abstype		("abstype")
     | KW_and			("and")
@@ -103,6 +105,7 @@
     ;
 
 %defs(
+structure A = ParseTree
 fun opt2list NONE = []
   | opt2list (SOME l) = l
 );
@@ -315,8 +318,10 @@ label
 (*---------------------------------------------------*)
 
 doc	: COMMENT
+		=> (FULL_SPAN, true, COMMENT)
 	;
 
 after_doc
 	: AFTER_COMMENT
+		=> (FULL_SPAN, false, AFTER_COMMENT)
 	;

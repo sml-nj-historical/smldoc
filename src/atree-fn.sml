@@ -1,4 +1,4 @@
-(* atree.sml
+(* atree-fn.sml
  *
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
@@ -6,11 +6,8 @@
  * SML Abstract Syntax trees annotated with documentation comments.
  *)
 
-structure ATree =
+structure Id =
   struct
-
-  (* raw documentation comment *)
-    type doc = MarkupTokens.token list
 
   (* identifiers; we annotate them with a property list to allow
    * anchors and hrefs to be associated with them.
@@ -19,6 +16,18 @@ structure ATree =
 	name : string,
 	props : PropList.holder
       }
+
+    fun new name = ID{name = name, props = PropList.newHolder()}
+
+  end
+
+functor ATreeFn (type doc) =
+  struct
+
+  (* documentation comment *)
+    type doc = doc
+
+    type id = Id.id
 
   (* SML types *)
     datatype typ
@@ -77,7 +86,7 @@ structure ATree =
 
     and where_spec
       = WHEREty of {
-	    params : string option,
+	    params : string list,
 	    id : string,
 	    def : typ
 	  }

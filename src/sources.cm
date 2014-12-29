@@ -1,8 +1,9 @@
 Library
 
+  structure ATree
   structure HTML4Dev
   structure Markup
-  structure ParseMarkup
+  structure Parser
 
   structure Test
 
@@ -17,11 +18,16 @@ is
 *)
 
   atree.sml
+  atree-fn.sml
+  error.sml
   markup.sml
   markup-tokens.sml
   parse-markup.sml
+  parser.sml
 
   html4-dev.sml
 
-  test.sml
+  smldoc.grm : ML-Antlr
+  smldoc.lex : ML-Ulex
 
+  test.sml
