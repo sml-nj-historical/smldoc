@@ -137,20 +137,51 @@ structure ParseMarkup : sig
 		in
 		  parse (skipWS ts, blks)
 		end
-	  and parseText ts = (case next ts
-		 of SOME(T.BLANKLN, ts') =>
-		  | SOME(T.TEXT s, ts') =>
-		  | SOME(T.WS ws, ts') =>
-		  | SOME(T.EOL, ts') =>
-		  | SOME(T.BOLD, ts') =>
-		  | SOME(T.ITALIC, ts') =>
-		  | SOME(T.EMPH, ts') =>
-		  | SOME(T.CLOSE, ts') =>
-		  | SOME(T.CODE, ts') =>
-		  | SOME(T.CLOSE_CODE, ts') =>
-		(* end case *))
+	  and parseText ts = let
+		fun parse (ts, elems) = (case parseTextElem ts
+		       of NONE => (List.rev elems, ts)
+			| SOME(elem, ts') => parse (ts', elem::elems)
+		      (* end case *))
+		in
+		  parse (ts, [])
+		end
+	  and parseTextElem ts = let
+		fun style con ts = let
+		      val (elems, ts') = parseText ts
+		      in
+			case next ts'
+			 of SOME(T.CLOSE, ts') => (con elems, ts')
+			  | _ => (* error: expected "}" *)
+			(* end case *)
+		      end
+		in
+		  case next ts
+		   of SOME(T.BLANKLN, _) => NONE
+		    | SOME(T.TEXT s, ts') =>
+		    | SOME(T.WS ws, ts') =>
+		    | SOME(T.EOL, ts') =>
+		    | SOME(T.BOLD, ts') => style M.TXT_B ts'
+		    | SOME(T.ITALIC, ts') => style M.TXT_I ts'
+		    | SOME(T.EMPH, ts') => style M.TXT_EM ts'
+		    | SOME(T.CLOSE, ts') => (* error: unexpected "}" *)
+		    | SOME(T.CODE, ts') => parseCode ts'
+		    | SOME(T.CLOSE_CODE, ts') => (* error: unexpected "]" *)
+		  (* end case *)
+		end
 	  and parseCode ts =
-	  and parseTags ts =
+	  and parseTags ts = let
+		fun parse (ts, tags) = (case next ts
+		     of NONE => List.rev tags
+		      | SOME(T.TAG tag, ts') => let
+			  val (tag, ts') = parseTag (tag, ts')
+			  in
+			    parse (skipWS ts', tag::tags)
+			  end
+		      | _ => (* error: expected "@xxx" tag *)
+		    (* end case *))
+		in
+		  parse (skipWS ts, [])
+		end
 	  and parseTag (tag, ts) =
 		if Atom.same(tag, a_author) then parseAuthor ts
 		else if Atom.same(tag, a_before) then parseBefore ts
