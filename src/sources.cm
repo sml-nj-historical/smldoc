@@ -1,6 +1,8 @@
 Library
 
   structure HTML4Dev
+  structure Markup
+  structure ParseMarkup
 
   structure Test
 
@@ -15,7 +17,9 @@ is
 *)
 
   atree.sml
+  markup.sml
   markup-tokens.sml
+  parse-markup.sml
 
   html4-dev.sml
 

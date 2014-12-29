@@ -17,7 +17,7 @@ structure ATree =
    *)
     datatype id = ID of {
 	name : string,
-	props : PropList.handle
+	props : PropList.holder
       }
 
   (* SML types *)

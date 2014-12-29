@@ -11,21 +11,27 @@
 
 structure ParseMarkup : sig
 
+    exception Error of (int * string)
+
   (** @brief parse the contents of an SMLdoc comment.
    **
-   ** [parse errFn (lnum, content)] parses the documentation comment [content].
-   ** @param errFn a callback function to report errors
+   ** [parse (lnum, content)] parses the documentation comment [content].
    ** @param lnum the starting line number of the SMLdoc comment
    ** @param content the content of the SMLdoc comment to be parsed
-   ** @return [SOME comment], where [comment] is the tree representation
-   **   of the parsed comment, or else [NONE] if there was an error.
+   ** @return the tree representation of the parsed comment
+   ** @raise [Error(lnum, msg)] for a parsing error.
    **)
-    val parse : (int * string -> unit) -> (int * MarkupTokens.token list) -> Markup.comment option
+    val parse : (int * bool * MarkupTokens.token list) -> Markup.comment
 
   end = struct
 
+    structure M = Markup
     structure T = MarkupTokens
-    structure ASet = AtomSet
+    structure AMap = AtomMap
+
+    exception Error of (int * string)
+
+    fun error (lnum, msg) = raise Error (lnum, String.concat msg)
 
   (* text block environments *)
     val a_center = Atom.atom "center"
@@ -58,7 +64,17 @@ structure ParseMarkup : sig
     val a_version = Atom.atom "version"
 
   (* a stream pairs a line number with the list of tokens *)
-    type stream = (int * token list)
+    type stream = (int * T.token list)
+
+    fun expectedError ((lnum, []), s) =
+	  error (lnum, ["expected ", s, ", but found nothing"])
+      | expectedError ((lnum, tok::_), s) =
+	  error (lnum, ["expected ", s, ", but found '", T.toString tok, "'"])
+
+    fun unexpectedError ((lnum, []), cxt) =
+	  error (lnum, ["unexpected end of comment in ", cxt])
+      | unexpectedError ((lnum, tok::_), cxt) =
+	  error (lnum, ["unexpected '", T.toString tok, "' in ", cxt])
 
     fun skipWS (ts : stream) = (case ts
 	   of (lnum, T.EOL :: r) => (lnum+1, r)
@@ -66,60 +82,56 @@ structure ParseMarkup : sig
 	    | _ => ts
 	  (* end case *))
 
+  (* eat expected whitespace *)
+    fun eatWS (ts : stream) = (case ts
+	   of (lnum, T.WS _ :: r) => skipWS(lnum, r)
+	    | (lnum, T.EOL :: r) => skipWS(lnum+1, r)
+	    | _ => expectedError (ts, "whitespace")
+	  (* endd case *))
+
     fun next (ts : stream) = (case ts
 	   of (lnum, T.EOL :: r) => SOME(T.EOL, (lnum+1, r))
 	    | (lnum, tok :: r) => SOME(tok, (lnum, r))
 	    | _ => NONE
 	  (* end case *))
 
-    fun parse errFn (lnum, isPre, toks) = let
-	  fun parseBlock (ts, blks) = (case next ts
-		 of NONE => {pre = isPre, desc = List.rev blks, tags = []}
-		  | T.BEGIN env :: r => (case AMap.find (kindMap, env)
-		       of SOME STYLE => let
-			    val (blk, lnum, rest) = parseStyleBlock (lnum, env, r)
-			    in
-			      parseBlock (lnum, rest, blk::blks)
-			    end
-			| SOME LIST => parseListBlock (lnum, env, r)
-			| NONE => (* error *)
+    fun parse (lnum, isPre, toks) = let
+	  fun parseBlocks ts = let
+		fun parse (ts, blks) = (case parseBlock ts
+		       of NONE => (List.rev blks, ts)
+			| SOME(blk, ts) => parse (ts, blk::blks)
 		      (* end case *))
-		  | T.TAG _ :: _ => (* switch to parsing the tags *)
-		      parseTags (lnum, toks, List.rev blks)
-		  | T.END _ :: _ => (* error: unexpected \end{xxx} *)
-		  | T.ITEM :: _ => (* error: unexpected \item *)
-		  | T.BLANKLN :: rest => parseBlock (lnum+1, rest, blks)
-		  | _ => ?? (* parse text *)
-		(* end case *))
-	  fun parseBlock ts = (case next ts
+		in
+		  parse (ts, [])
+		end
+	  and parseBlock ts = (case next ts
 		 of NONE => NONE
 		  | SOME(T.BEGIN env, ts') => (case AMap.find (kindMap, env)
 		       of SOME STYLE => SOME(parseStyleBlock (env, ts'))
 			| SOME LIST => SOME(parseListBlock (env, ts'))
-			| NONE => (* error *)
+			| NONE => error (#1 ts, ["unknown block kind '", Atom.toString env, "'"])
 		      (* end case *))
 		  | SOME(T.BLANKLN, ts') => SOME(M.TB_Blank, ts')
 		  | SOME(T.TAG _, _) => NONE
-		  | SOME(T.END, _) => (* error: unexpected \end{xxx} *)
-		  | SOME(T.ITEM, _) => (* error: unexpected \item *)
+		  | SOME(tok as T.END _, _) => error (#1 ts, ["unexpected '", T.toString tok, "'"])
+		  | SOME(T.ITEM, _) => error (#1 ts, ["unexpected '\\item'"])
 		  | _ => ?? (* parse text *)
 		(* end case *))
 	(* parse "\begin{style}" ... "\end{style}" *)
 	  and parseStyleBlock (style, ts) = let
 	      (* parse loop for block content *)
 		fun parse (ts, blks) = (case next ts
-		       of NONE => (* error: unexpected end-of-comment *)
+		       of NONE => unexpectedError (ts, concat["open '", Atom.toString style, "'"])
 			| SOME(T.END style', ts') => if Atom.same(style, style')
 			    then (M.TB_Style(style, List.rev blks), ts')
-			    else (* error: wrong close tag *)
-			| _ => let
-			    val (blk, ts') = parseBlock ts
-			    in
-			      parse (ts', blk::blks)
-			    end
+			    else expectedError (ts, concat["'\\end{", Atom.toString style, "}'"])
+			| _ => (case parseBlock ts
+			     of SOME(blk, ts') => parse (ts', blk::blks)
+			      | NONE => expectedError (ts, concat["'\\end{", Atom.toString style, "}'"])
+			    (* end case *))
 		      (* end case *))
 		in
-		  parse (skipWS ts, blks)
+		  parse (skipWS ts, [])
 		end
 	  and parseListBlock (list, ts) = let
 	      (* parse loop for list content *)
@@ -129,13 +141,15 @@ structure ParseMarkup : sig
 			    in
 			      parse (ts', blks::items)
 			    end
-			| SOME(T.END style', ts') => if Atom.same(style, style')
-			    then (M.TB_Style(style, List.rev blks), ts')
-			    else (* error: wrong close tag *)
-			| _ => (* error: expected either "\end" or "\item" *)
+			| SOME(T.END list', ts') => if Atom.same(list, list')
+			    then (M.TB_List(list, List.rev items), ts')
+			    else expectedError (ts, concat["'\\end{", Atom.toString list, "}'"])
+			| _ => expectedError (ts, concat[
+			      "either '\\end{", Atom.toString list, "}' or '\\item'"
+			    ])
 		      (* end case *))
 		in
-		  parse (skipWS ts, blks)
+		  parse (skipWS ts, [])
 		end
 	  and parseText ts = let
 		fun parse (ts, elems) = (case parseTextElem ts
@@ -150,25 +164,25 @@ structure ParseMarkup : sig
 		      val (elems, ts') = parseText ts
 		      in
 			case next ts'
-			 of SOME(T.CLOSE, ts') => (con elems, ts')
-			  | _ => (* error: expected "}" *)
+			 of SOME(T.CLOSE, ts') => SOME(con elems, ts')
+			  | _ => expectedError (ts', "'}'")
 			(* end case *)
 		      end
 		in
 		  case next ts
 		   of SOME(T.BLANKLN, _) => NONE
-		    | SOME(T.TEXT s, ts') =>
-		    | SOME(T.WS ws, ts') =>
-		    | SOME(T.EOL, ts') =>
+		    | SOME(T.TEXT s, ts') => ??
+		    | SOME(T.WS ws, ts') => ??
+		    | SOME(T.EOL, ts') => ??
 		    | SOME(T.BOLD, ts') => style M.TXT_B ts'
 		    | SOME(T.ITALIC, ts') => style M.TXT_I ts'
 		    | SOME(T.EMPH, ts') => style M.TXT_EM ts'
-		    | SOME(T.CLOSE, ts') => (* error: unexpected "}" *)
+		    | SOME(T.CLOSE, ts') => unexpectedError (ts, "text element")
 		    | SOME(T.CODE, ts') => parseCode ts'
-		    | SOME(T.CLOSE_CODE, ts') => (* error: unexpected "]" *)
+		    | SOME(T.CLOSE_CODE, ts') => unexpectedError (ts, "text element")
 		  (* end case *)
 		end
-	  and parseCode ts =
+	  and parseCode ts = ??
 	  and parseTags ts = let
 		fun parse (ts, tags) = (case next ts
 		     of NONE => List.rev tags
@@ -177,46 +191,96 @@ structure ParseMarkup : sig
 			  in
 			    parse (skipWS ts', tag::tags)
 			  end
-		      | _ => (* error: expected "@xxx" tag *)
+		      | _ => expectedError (ts, "documentation tag")
 		    (* end case *))
 		in
 		  parse (skipWS ts, [])
 		end
-	  and parseTag (tag, ts) =
-		if Atom.same(tag, a_author) then parseAuthor ts
-		else if Atom.same(tag, a_before) then parseBefore ts
-		else if Atom.same(tag, a_date) then parseDate ts
-		else if Atom.same(tag, a_deprecated) then parseDeprecated ts
-		else if Atom.same(tag, a_instance) then parseInstance ts
-		else if Atom.same(tag, a_param) then parseParam ts
-		else if Atom.same(tag, a_raise) then parseRaise ts
-		else if Atom.same(tag, a_return) then parseReturn ts
-		else if Atom.same(tag, a_see) then parseSee ts
-		else if Atom.same(tag, a_since) then parseSince ts
-		else if Atom.same(tag, a_version) then parseVersion ts
-		else (* error *)
+	(* parse the contents of the individual tag *)
+	  and parseTag (tag, ts) = let
+		val ts = eatWS ts
+		in
+		  if Atom.same(tag, a_author) then parseAuthor ts
+		  else if Atom.same(tag, a_before) then parseBefore ts
+		  else if Atom.same(tag, a_date) then parseDate ts
+		  else if Atom.same(tag, a_deprecated) then parseDeprecated ts
+		  else if Atom.same(tag, a_instance) then parseInstance ts
+		  else if Atom.same(tag, a_param) then parseParam ts
+		  else if Atom.same(tag, a_raise) then parseRaise ts
+		  else if Atom.same(tag, a_return) then parseReturn ts
+		  else if Atom.same(tag, a_see) then parseSee ts
+		  else if Atom.same(tag, a_since) then parseSince ts
+		  else if Atom.same(tag, a_version) then parseVersion ts
+		  else error (#1 ts, ["unknown tag '@", Atom.toString tag, "'"])
+		end
+	  and parseTagString (tagName, mkTag, ts) = let
+		fun done (txt, ts') = (mkTag(String.concat(List.rev txt)), ts')
+		fun parseString (ts, txt) = (case next ts
+		       of NONE => done(txt, ts)
+			| SOME(T.EOL, ts') => done (txt, ts')
+			| SOME(T.WS s, ts') => parseString (ts', s::txt)
+			| SOME(T.TEXT s, ts') => parseString (ts', s::txt)
+			| _ => error (#1 ts, ["malformed '@", tagName, "' tag"])
+		      (* end case *))
+		in
+		  parseString (ts, [])
+		end
+	(* parse a tag body of the form: <id> <ws> <text> *)
+	  and parseTagIdText (tagName, mkTag, ts) = (case next ts
+		 of SOME(T.TEXT id, ts') => let
+		      val (desc, ts') = parseText ts'
+		      in
+			(mkTag {id = id, desc = desc}, ts')
+		      end
+		  | _ => error (#1 ts, ["malformed '@", tagName, "' tag"])
+		(* end case *))
+	(* parse a tag body of the form: <text> *)
+	  and parseTagText (mkTag, ts) = let
+		val (desc, ts') = parseText ts
+		in
+		  (mkTag desc, ts')
+		end
 	(* parse the rest of an author tag: "@author" <ws> <string> *)
-	  and parseAuthor ts =
-	  and parseDate ts =
-	  and parseDeprecated ts =
+	  and parseAuthor ts = parseTagString ("author", M.TAG_author, ts)
+	(* parse the rest of an date tag: "@date" <ws> YYYY-MM-DD *)
+	  and parseDate ts = (case next ts
+		 of SOME(T.TEXT s, ts') => let
+		      fun continue (tag, ts) = (case next ts
+			     of NONE => (tag, ts)
+			      | SOME(T.EOL, ts') => (tag, ts')
+			      | SOME(T.WS _, ts') => continue (tag, ts')
+			      | _ => error (#1 ts, ["malformed '@date' tag"])
+			    (* end case *))
+		      in
+		      (* parse the date, which should be in YYYY-MM-DD format *)
+			case List.map Int.fromString (String.fields (fn #"-" => true | _ => false) s)
+			 of [SOME y, SOME m, SOME d] =>
+			      continue (M.TAG_date{year=y, month=m, day=d}, ts')
+			  | _ => error (#1 ts, ["malformed '@date' tag"])
+			(* end case *)
+		      end
+		  | _ => error (#1 ts, ["malformed '@date' tag"])
+		(* end case *))
+	(* parse the rest of an instance tag: "@deprecated" <ws> <text> *)
+	  and parseDeprecated ts = parseTagText (M.TAG_deprecated, ts)
 	(* parse the rest of an instance tag: "@instance" <ws> <longid> <ws> <text> *)
-	  and parseInstance ts =
+	  and parseInstance ts = parseTagIdText ("instance", M.TAG_instance, ts)
 	(* parse the rest of a parameter tag: "@param" <ws> <id> <ws> <text> *)
-	  and parseParam ts =
+	  and parseParam ts = parseTagIdText ("param", M.TAG_param, ts)
 	(* parse the rest of a raise parameter tag: "@raise" <ws> <longid> <ws> <text> *)
-	  and parseRaise ts =
+	  and parseRaise ts = parseTagIdText ("raise", M.TAG_raise, ts)
 	(* parse the rest of a return tag: "@return" <ws> <text> *)
-	  and parseReturn ts =
+	  and parseReturn ts = parseTagText (M.TAG_return, ts)
 	(* parse the rest of a see tag: "@see" <ws> [ <url> | <file> | <string> ] <ws> <text> *)
-	  and parseSee ts =
-	  and parseSince ts =
-	(* parse the rest of a version tag: "@version" <version> *)
-	  and parseVersion ts =
+	  and parseSee ts = raise Fail "@see unimplemented"
+	(* parse the rest of an since tag: "@since" <ws> <version> *)
+	  and parseSince ts = parseTagString ("since", M.TAG_since, ts)
+	(* parse the rest of a version tag: "@version" <ws> <version> *)
+	  and parseVersion ts = parseTagString ("version", M.TAG_version, ts)
 	  and parseComment ts = let
 		val (blks, ts') = parseBlocks ts
-		val (tags, ts') = parseTags ts
+		val tags = parseTags ts
 		in
-(* QUESTION: do we need to check for end of comment? *)
 		  {pre = isPre, desc = blks, tags = tags}
 		end
 	  in

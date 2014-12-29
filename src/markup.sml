@@ -23,7 +23,7 @@ structure Markup =
     and text_elem
       = TXT_B of text
       | TXT_I of text
-      | TXT_E of text
+      | TXT_EM of text
       | TXT_CODE of code_elem list
       | TXT_CHARS of string
 
@@ -38,16 +38,17 @@ structure Markup =
       | COM of string		(** comment *)
 
     and tag
-      = TAG_author of ??
-      | TAG_date of ??
-      | TAG_deprecated of ??
-      | TAG_param of ??
-      | TAG_raise of ??
-      | TAG_return of ??
-      | TAG_see of ??
-      | TAG_since of ??
-      | TAG_version of ??
-      | TAG_instance of ??
+      = TAG_author of string
+      | TAG_copy of text
+      | TAG_date of {year : int, month : int, day : int}
+      | TAG_deprecated of text
+      | TAG_instance of {id : string, desc : text}
+      | TAG_param of {id : string, desc : text}
+      | TAG_raise of {id : string, desc : text}
+      | TAG_return of text
+      | TAG_see of unit (* FIXME *)
+      | TAG_since of string
+      | TAG_version of string
 
     withtype text = text_elem list
 
