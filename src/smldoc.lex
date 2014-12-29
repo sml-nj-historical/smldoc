@@ -6,7 +6,7 @@
 
 %name SMLDocLexer;
 
-$defs(
+%defs(
     structure T = Tokens
     structure MT = MarkupTokens
     structure SS = Substring
@@ -76,9 +76,9 @@ $defs(
                     ; continue ());
 
 (**** Comments ****)
-<INITIAL>"(**)"	=> ();
+<INITIAL>"(**)"	=> (skip());
 <INITIAL>"(**""*"+")"	
-	=> (continue());
+	=> (skip());
 <INITIAL>"(**<"	=> (YYBEGIN DC; T.AFTER_COMMENT(continue()) before YYBEGIN INITIAL);
 <INITIAL>"(**"	=> (YYBEGIN DC; T.COMMENT(continue()) before YYBEGIN INITIAL);
 <INITIAL>"(*"   => (YYBEGIN C;
@@ -96,15 +96,15 @@ $defs(
 <C>.            => (continue ());
 
 (***** Strings *****)
-<S>"\""	=> (let
-	    val s = String.concat (List.rev ("\"" :: !charlist))
-	    val _ = charlist := nil
-	    in
-	      YYBEGIN INITIAL;
-	      if !stringtype
-		then T.STRING s
-		else T.CHAR s
-	    end);
+<S>"\""		=> (let
+		    val s = String.concat (List.rev ("\"" :: !charlist))
+		    val _ = charlist := nil
+		    in
+		      YYBEGIN INITIAL;
+		      if !stringtype
+			then T.STRING s
+			else T.CHAR s
+		    end);
 <S>\\a          => (addChar #"\a"; continue ());
 <S>\\b          => (addChar #"\b"; continue ());
 <S>\\f          => (addChar #"\f"; continue ());
@@ -115,9 +115,9 @@ $defs(
 <S>\\\^[@-_]    => (addChar (Char.chr(Char.ord(String.sub(yytext, 2)) -Char.ord #"@"));
                     continue ());
 <S>\\\^.
-	=> (error (source, yypos, yypos + 2,
-	      "illegal control escape; must be one of @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
-	    continue ());
+		=> (error (source, yypos, yypos + 2,
+		      "illegal control escape; must be one of @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
+		    continue ());
 
 <S>\\[0-9]{3}
 	=> (let
@@ -166,34 +166,24 @@ $defs(
 <DC_BOL>{ws}*"*"*	=> (YYBEGIN DC; continue());
 <DC>{eol}		=> (addMarkup MT.NL; YYBEGIN DC_BOL; continue());
 
-<DC,DC_BOL>"*)"		=> (getMarkup())
-<DC>"@"([a-zA-Z0-9]+)	=> (addMarkup (MT.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE)))); continue());
-<DC>"@author"		=> (addMarkup MT.TAG_author; continue());
-<DC>"@deprecated"	=> (addMarkup MT.TAG_deprecated; continue());
-<DC>"@param"		=> (addMarkup MT.TAG_param; continue());
-<DC>"@raise"		=> (addMarkup MT.TAG_raise; continue());
-<DC>"@return"		=> (addMarkup MT.TAG_return; continue());
-<DC>"@see"		=> (addMarkup MT.TAG_see; continue());
-<DC>"@since"		=> (addMarkup MT.TAG_since; continue());
-<DC>"@source"		=> (addMarkup MT.TAG_source; continue());
-<DC>"@before"		=> (addMarkup MT.TAG_before; continue());
-<DC>"@version"		=> (addMarkup MT.TAG_version; continue());
+<DC,DC_BOL>"*)"		=> (getMarkup());
+<DC>"@"([a-zA-Z0-9]+)	=> (addMarkup (MT.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE))));
+			    continue());
 
-
-<DC>"\b{"		=> (addMarkup MT.BOLD; continue());
-<DC>"\i{"		=> (addMarkup MT.ITALIC; continue());
-<DC>"\e{"		=> (addMarkup MT.EMPH; continue());
-<DC>"\begin{"[a-zA-Z0-9]*"}"
+<DC>"\\b{"		=> (addMarkup MT.BOLD; continue());
+<DC>"\\i{"		=> (addMarkup MT.ITALIC; continue());
+<DC>"\\e{"		=> (addMarkup MT.EMPH; continue());
+<DC>"\\begin{"[a-zA-Z0-9]*"}"
 			=> (
 			    addMarkup (MT.BEGIN(Atom.atom'(
 			      SS.slice(yysubstr, 7, SOME(SS.size yysubstr - 8)))));
 			    continue());
-<DC>"\end{"[a-zA-Z0-9]*"}"
+<DC>"\\end{"[a-zA-Z0-9]*"}"
 			=> (
 			    addMarkup (MT.END(Atom.atom'(
 			      SS.slice(yysubstr, 5, SOME(SS.size yysubstr - 6)))));
 			    continue());
-<DC>"\item"		=> (addMarkup MT.ITEM; continue());
+<DC>"\\item"		=> (addMarkup MT.ITEM; continue());
 <DC>"}"			=> (addMarkup MT.CLOSE; continue());
 <DC>"["			=> (addMarkup MT.CODE; continue());
 <DC>"]"			=> (addMarkup MT.CLOSE_CODE; continue());

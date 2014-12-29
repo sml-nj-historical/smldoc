@@ -74,7 +74,7 @@ structure Parser : sig
 		      in
 		        A.EXNspec(List.map cvt specs)
 		      end
-		  | PT.TYspec specs = let
+		  | PT.TYspec specs => let
 		      fun cvt {doc, eq, params, id, def} = {
 			      doc = cvtDoc doc,
 			      eq = eq, params = params, id = id,

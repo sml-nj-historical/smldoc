@@ -106,19 +106,17 @@
 
 %defs(
 structure A = ParseTree
-fun opt2list NONE = []
-  | opt2list (SOME l) = l
+fun mergeDoc (NONE, d) = d
+  | mergeDoc (d, NONE) = d
+  | mergeDoc (SOME((p1, _), isPre, toks1), SOME((_, p2), _, toks2)) =
+      SOME((p1, p2), isPre, toks1 @ toks2)
 );
 
 program
 	: topdec' topdec*
-		=> (A.FILE([], topdec' :: topdec))
+		=> (A.FILE(NONE, topdec' :: topdec))
 	| doc (BLANKLN? doc)? topdec' topdec*
-		=> (let
-		    val td = (case SR of NONE => ([], topdec') | SOME d => (d, topdec'))
-		    in
-		      A.FILE(doc, td :: topdec)
-		    end)
+		=> (A.FILE(SOME doc, (SR, topdec') :: topdec))
 	;
 
 topdec
@@ -126,7 +124,7 @@ topdec
 		=> (let
 		    val (d, td)::r = topdec'
 		    in
-		      (opt2list doc @ d, td) :: r
+		      (mergeDoc(doc, d), td) :: r
 		    end)
 	;
 
@@ -140,18 +138,18 @@ topdec'
 (*---------------------------------------------------*)
 
 sigbinds
-	: sigbind (doc? "and" sigbind => (opt2list doc, sigbind))*
+	: sigbind (doc? "and" sigbind => (doc, sigbind))*
 		=> (sigbind :: SR)
 	;
 
 sigbind
 	: sigbind' after_doc?
-		=> (opt2list after_doc, sigbind')
+		=> (after_doc, sigbind')
 	;
 
 sigbind'
 	: id "=" sigexp
-		=> (A.SIGdec(id, #1 sigexp, #2 sigexp))
+		=> (let val (a, b) = sigexp in A.SIGdec(id, a, b) end)
 	;
 
 sigexp
@@ -193,7 +191,7 @@ spec
 	: ";"
 		=> (NONE)
 	| doc? spec'
-		=> (SOME(opt2list doc, spec'))
+		=> (SOME(doc, spec'))
 	;
 
 spec'	: "val" valdesc (doc? "and" valdesc)*

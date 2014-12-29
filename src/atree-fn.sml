@@ -21,11 +21,11 @@ structure Id =
 
   end
 
-functor ATreeFn (type doc) =
+functor ATreeFn (type doc_comment) =
   struct
 
   (* documentation comment *)
-    type doc = doc
+    type doc = doc_comment option
 
     type id = Id.id
 
@@ -39,7 +39,7 @@ functor ATreeFn (type doc) =
       | PARENty of typ
 
     datatype file
-      = FILE of (doc * topdec list)
+      = FILE of (doc * (doc * topdec) list)
 
     and topdec
       = SIGdec of id * sigexp * where_spec list
