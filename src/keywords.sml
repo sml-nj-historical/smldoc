@@ -7,91 +7,121 @@
 
 structure Keywords : sig
 
-  (** May identifiers (both alpha-numeric and symbolic) to tokens. *)
-    val idToken : string -> SMLTokens.token
+  (** Map alpha-numeric identifiers to parser tokens. *)
+    val idToken : string -> SMLDocTokens.token
+  (** Map symbolic identifiers to parser tokens. *)
+    val symToken : string -> SMLDocTokens.token
+
+  (** Map alpha-numeric identifiers to documentation comment tokens. *)
+    val idToken' : string -> MarkupTokens.token
+  (** Map symbolic identifiers to documentation comment tokens. *)
+    val symToken' : string -> MarkupTokens.token
 
   end = struct
 
-    structure T = SMLTokens
+    structure T = SMLDocTokens
+    structure MT = MarkupTokens
 
     val keywords = [
-	    ("abstype",		KW_abstype),
-	    ("and",		KW_and),
-	    ("andalso",		KW_andalso),
-	    ("as",		KW_as),
-	    ("case",		KW_case),
-	    ("datatype",	KW_datatype),
-	    ("do",		KW_do),
-	    ("else",		KW_else),
-	    ("end",		KW_end),
-	    ("eqtype",		KW_eqtype),
-	    ("exception",	KW_exception),
-	    ("fn",		KW_fn),
-	    ("fun",		KW_fun),
-	    ("functor",		KW_functor),
-	    ("handle",		KW_handle),
-	    ("if",		KW_if),
-	    ("in",		KW_in),
-	    ("include",		KW_include),
-	    ("infix",		KW_infix),
-	    ("infixr",		KW_infixr),
-	    ("let",		KW_let),
-	    ("local",		KW_local),
-	    ("nonfix",		KW_nonfix),
-	    ("orelse",		KW_orelse),
-	    ("of",		KW_of),
-	    ("op",		KW_op),
-	    ("open",		KW_open),
-	    ("raise",		KW_raise),
-	    ("rec",		KW_rec),
-	    ("sharing",		KW_sharing),
-	    ("sig",		KW_sig),
-	    ("signature",	KW_signature),
-	    ("struct",		KW_struct),
-	    ("structure",	KW_structure),
-	    ("then",		KW_then),
-	    ("type",		KW_type),
-	    ("val",		KW_val),
-	    ("where",		KW_where),
-	    ("while",		KW_while),
-	    ("with",		KW_with),
-	    ("withtype",	KW_withtype),
+	    ("abstype",		T.KW_abstype),
+	    ("and",		T.KW_and),
+	    ("andalso",		T.KW_andalso),
+	    ("as",		T.KW_as),
+	    ("case",		T.KW_case),
+	    ("datatype",	T.KW_datatype),
+	    ("do",		T.KW_do),
+	    ("else",		T.KW_else),
+	    ("end",		T.KW_end),
+	    ("eqtype",		T.KW_eqtype),
+	    ("exception",	T.KW_exception),
+	    ("fn",		T.KW_fn),
+	    ("fun",		T.KW_fun),
+	    ("functor",		T.KW_functor),
+	    ("handle",		T.KW_handle),
+	    ("if",		T.KW_if),
+	    ("in",		T.KW_in),
+	    ("include",		T.KW_include),
+	    ("infix",		T.KW_infix),
+	    ("infixr",		T.KW_infixr),
+	    ("let",		T.KW_let),
+	    ("local",		T.KW_local),
+	    ("nonfix",		T.KW_nonfix),
+	    ("orelse",		T.KW_orelse),
+	    ("of",		T.KW_of),
+	    ("op",		T.KW_op),
+	    ("open",		T.KW_open),
+	    ("raise",		T.KW_raise),
+	    ("rec",		T.KW_rec),
+	    ("sharing",		T.KW_sharing),
+	    ("sig",		T.KW_sig),
+	    ("signature",	T.KW_signature),
+	    ("struct",		T.KW_struct),
+	    ("structure",	T.KW_structure),
+	    ("then",		T.KW_then),
+	    ("type",		T.KW_type),
+	    ("val",		T.KW_val),
+	    ("where",		T.KW_where),
+	    ("while",		T.KW_while),
+	    ("with",		T.KW_with),
+	    ("withtype",	T.KW_withtype),
 	  (* symbolic reserved words *)
-	    ("*",		ASTERISK),
-	    (":=",		ASSIGN),
-	    ("&",		AMPERSAND),
-	    ("!",		BANG),
-	    ("/",		SLASH),
-	    ("->",		ARROW),
-	    ("|",		BAR),
-	    (":",		COLON),
-	    (":>",		COLONGT),
-	    ("=",		EQUALOP),
-	    ("=>",		DARROW),
-	    ("#",		HASH)
+	    ("*",		T.ASTERISK),
+	    (":=",		T.ASSIGN),
+	    ("&",		T.AMPERSAND),
+	    ("!",		T.BANG),
+	    ("/",		T.SLASH),
+	    ("->",		T.ARROW),
+	    ("|",		T.BAR),
+	    (":",		T.COLON),
+	    (":>",		T.COLONGT),
+	    ("=",		T.EQUALOP),
+	    ("=>",		T.DARROW),
+	    ("#",		T.HASH)
 	  ]
 
   (* create a keyword lookup table *)
     local
-      fun mkFind kws = let
+      val find = let
             val tbl = AtomTable.mkTable (17, Fail "keywords")
             fun ins (id, tok) = AtomTable.insert tbl (Atom.atom id, tok)
-            val find = AtomTable.find tbl
-            fun idToken id = let
-                  val id = Atom.atom id
-                  in
-                    case find id
-                     of NONE => T.ID id
-                      | SOME kw => kw
-                    (* end case *)
-                  end
             in
-              List.app ins kws;
-              idToken
+              List.app ins keywords;
+              AtomTable.find tbl
             end
     in
-  (* return either a keyword token or an ID token *)
-      val idToken = mkFind keywords
+    fun idToken id = let
+	  val id = Atom.atom id
+	  in
+	    case find id
+	     of NONE => T.ID id
+	      | SOME kw => kw
+	    (* end case *)
+	  end
+    fun symToken id = let
+	  val id = Atom.atom id
+	  in
+	    case find id
+	     of NONE => T.SYMID id
+	      | SOME kw => kw
+	    (* end case *)
+	  end
+  (* versions for documentation comments *)
+    fun idToken' id = let
+	  val id = Atom.atom id
+	  in
+	    case find id
+	     of NONE => MT.ID id
+	      | SOME _ => MT.KW id
+	    (* end case *)
+	  end
+    fun symToken' id = let
+	  val id = Atom.atom id
+	  in
+	    case find id
+	     of NONE => MT.ID id
+	      | SOME _ => MT.SYM id
+	    (* end case *)
+	  end
     end
 
   end

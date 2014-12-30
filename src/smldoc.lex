@@ -6,15 +6,33 @@
 
 %name SMLDocLexer;
 
+%arg (lexErr);
+
 %defs(
-    structure T = Tokens
+    structure T = SMLDocTokens
     structure MT = MarkupTokens
     structure SS = Substring
 
-  (* markup token buffer for parsing documentation comments *)
+    type lex_result = T.token
+
+    fun eof () = T.EOF
+
+    fun inc r = (r := !r + 1)
+    fun dec r = (r := !r - 1)
+
+  (* count nesting level of comments *)
+    val commentLevel = ref 0;
+
+  (* buffer for scanning strings *)
+    val stringBuf : string list ref = ref []
+    val stringtype = ref true	(* true for strings, false for char *)
+    val stringStart : AntlrStreamPos.pos ref = ref 0
+    fun addString s = (stringBuf := s :: !stringBuf)
+
+  (* markup token buffer for scanning documentation comments *)
     val markup : MT.token list ref = ref[]
-    val addMarkup tok = (markup := tok :: !markup)
-    val getMarkup () = (List.rev(!markup) before markup := [])
+    fun addMarkup tok = (markup := tok :: !markup)
+    fun getMarkup () = (List.rev(!markup) before markup := [])
 );
 
 %let alphanum = [A-Za-z'_0-9]*;
@@ -51,7 +69,7 @@
 
 <INITIAL>{id}	=> (Keywords.idToken yytext);
 
-<INITIAL>{real}	=> (T.REALyytext);
+<INITIAL>{real}	=> (T.REAL yytext);
 <INITIAL>{num}	=> (T.INT yytext);
 <INITIAL>"~"{num}
 		=> (T.INT yytext);
@@ -65,12 +83,12 @@
 		=> (T.WORD yytext);
 
 <INITIAL>\"     => (charlist := [yytext]
-                    ; stringStart := Source.getPos (source, Position.toInt yypos)
+                    ; stringStart := yypos
                     ; stringtype := true
                     ; YYBEGIN S
                     ; continue ());
 <INITIAL>\#\"   => (charlist := [yytext]
-                    ; stringStart := Source.getPos (source, Position.toInt yypos)
+                    ; stringStart := yypos
                     ; stringtype := false
                     ; YYBEGIN S
                     ; continue ());
@@ -97,53 +115,52 @@
 
 (***** Strings *****)
 <S>"\""		=> (let
-		    val s = String.concat (List.rev ("\"" :: !charlist))
-		    val _ = charlist := nil
+		    val s = String.concat (List.rev ("\"" :: !stringBuf))
+		    val _ = stringBuf := []
 		    in
 		      YYBEGIN INITIAL;
 		      if !stringtype
 			then T.STRING s
 			else T.CHAR s
 		    end);
-<S>\\a          => (addChar #"\a"; continue ());
-<S>\\b          => (addChar #"\b"; continue ());
-<S>\\f          => (addChar #"\f"; continue ());
-<S>\\n          => (addChar #"\n"; continue ());
-<S>\\r          => (addChar #"\r"; continue ());
-<S>\\t          => (addChar #"\t"; continue ());
-<S>\\v          => (addChar #"\v"; continue ());
-<S>\\\^[@-_]    => (addChar (Char.chr(Char.ord(String.sub(yytext, 2)) -Char.ord #"@"));
+<S>\\a          => (addString "\a"; continue ());
+<S>\\b          => (addString "\b"; continue ());
+<S>\\f          => (addString "\f"; continue ());
+<S>\\n          => (addString "\n"; continue ());
+<S>\\r          => (addString "\r"; continue ());
+<S>\\t          => (addString "\t"; continue ());
+<S>\\v          => (addString "\v"; continue ());
+<S>\\\^[@-_]    => (addChar (Char.chr(Char.ord(String.sub(yytext, 2)) - Char.ord #"@"));
                     continue ());
 <S>\\\^.
 		=> (error (source, yypos, yypos + 2,
 		      "illegal control escape; must be one of @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
 		    continue ());
-
 <S>\\[0-9]{3}
-	=> (let
-	    fun c (i, scale) = scale * (Char.ord(String.sub (yytext, i)) - Char.ord #"0")
-	    val () = addOrd (IntInf.fromInt (c (1, 100) + c (2, 10) + c (3, 1)))
-	    in
-	      continue ()
-	    end);
+		=> (let
+		    fun c (i, scale) = scale * (Char.ord(String.sub (yytext, i)) - Char.ord #"0")
+		    val () = addOrd (IntInf.fromInt (c (1, 100) + c (2, 10) + c (3, 1)))
+		    in
+		      continue ()
+		    end);
 <S>\\u{hexDigit}{4}
-	=> (addHexEscape (String.substring (yytext, 2, 4), source, yypos); continue ());
+		=> (addHexEscape (String.substring (yytext, 2, 4), source, yypos); continue ());
 <S>\\U{hexDigit}{8}
-	=> (addHexEscape (String.substring (yytext, 2, 8), source, yypos); continue ());
+		=> (addHexEscape (String.substring (yytext, 2, 8), source, yypos); continue ());
 <S>"\\\""
-	=> (addString "\""; continue ());
+		=> (addString "\""; continue ());
 <S>\\\\
-	=> (addString "\\"; continue ());
+		=> (addString "\\"; continue ());
 <S>\\{nrws}
-	=> (YYBEGIN F; continue ());
+		=> (YYBEGIN F; continue ());
 <S>\\{eol}
-	=> (Source.newline (source, (Position.toInt yypos) + 1) ; YYBEGIN F ; continue ());
-<S>\\	=> (stringError (source, yypos, "illegal string escape"); continue ());
+		=> (Source.newline (source, (Position.toInt yypos) + 1) ; YYBEGIN F ; continue ());
+<S>\\		=> (stringError (source, yypos, "illegal string escape"); continue ());
 <S>{eol}
-	=> (Source.newline (source, Position.toInt yypos);
-	    stringError (source, yypos, "unclosed string")
-	    continue ());
-<S>.	=> (addString yytext; continue ());
+		=> (Source.newline (source, Position.toInt yypos);
+		    stringError (source, yypos, "unclosed string")
+		    continue ());
+<S>.		=> (addString yytext; continue ());
 
 <F>{eol}        => (Source.newline (source, Position.toInt yypos) ; continue ());
 <F>{ws}         => (continue ());

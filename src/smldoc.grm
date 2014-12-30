@@ -75,9 +75,9 @@
   (* literals *)
     | CHAR of string
     | INT of string
-    | ID of string
-    | SYMID of string
-    | LONGID of string
+    | ID of Atom.atom
+    | SYMID of Atom.atom
+    | LONGID of Atom.atom
     | REAL of string
     | STRING of string
     | TYVAR of string
@@ -308,7 +308,7 @@ atyp
 		=> (fn ids => (case (typ::SR, ids)
 		       of ([typ], []) => A.PARENty typ
 			| (typs, id::r) => mkTyApp (A.CONty(typs, id)) r
-			| (typs, []) => A.CONty(typs, Id.new "*bogus*")
+			| (typs, []) => A.CONty(typs, Id.bogus)
 		      (* end case *)))
 	;
 
@@ -343,7 +343,7 @@ longid
 
 label
 	: ID		=> (Id.new ID)
-	| INT		=> (Id.new INT)
+	| INT		=> (Id.new(Atom.atom INT))
 	;
 
 (*---------------------------------------------------*)

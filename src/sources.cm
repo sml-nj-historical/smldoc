@@ -21,6 +21,7 @@ is
   atree.sml
   atree-fn.sml
   error.sml
+  keywords.sml
   markup.sml
   markup-tokens.sml
   parse-markup.sml

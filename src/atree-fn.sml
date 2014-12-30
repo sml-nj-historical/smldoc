@@ -13,11 +13,13 @@ structure Id =
    * anchors and hrefs to be associated with them.
    *)
     datatype id = ID of {
-	name : string,
+	name : Atom.atom,
 	props : PropList.holder
       }
 
     fun new name = ID{name = name, props = PropList.newHolder()}
+
+    val bogus = new(Atom.atom "*bogus*")
 
   end
 
