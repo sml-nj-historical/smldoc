@@ -47,7 +47,21 @@ structure MarkupTokens =
       | toString CLOSE = "}"
       | toString CODE = "["
       | toString CLOSE_CODE = "]"
-      | toString tok = "<token>" (* FIXME *)
+      | toString (KW id) = Atom.toString id
+      | toString (SYM id) = Atom.toString id
+      | toString (PUNCT id) = Atom.toString id
+      | toString (ID id) = Atom.toString id
+      | toString (INT s) = s
+      | toString (WORD s) = s
+      | toString (REAL s) = s
+      | toString (STRING s) = s
+      | toString (CHAR s) = s
+      | toString (COM s) = s
+      | toString BLANKLN = "<blankln>"
+      | toString (TEXT s) = concat["<text:", s, ">"]
+      | toString (WS s) = concat["<ws:", String.toString s, ">"]
+      | toString EOL = "<eol>"
+      | toString (TAG id) = Atom.toString id
 
   end
 

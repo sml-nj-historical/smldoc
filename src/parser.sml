@@ -61,8 +61,7 @@ structure Parser : sig
 		      in
 			ParseMarkup.parse (lnum, isPre, toks)
 			  handle ParseMarkup.Error(lnum, msg) => (
-(* FIXME: want to report the line number too! *)
-			    Error.error(errStrm, [msg]);
+			    Error.errorAtLine (errStrm, lnum, [msg]);
 			    {pre = isPre, desc = [], tags = []})
 		      end
 		in
@@ -71,6 +70,7 @@ structure Parser : sig
 	  fun cvtTyp (PT.VARty tv) = A.VARty tv
 	    | cvtTyp (PT.CONty(tys, id)) = A.CONty(List.map cvtTyp tys, id)
 	    | cvtTyp (PT.FUNty(ty1, ty2)) = A.FUNty(cvtTyp ty1, cvtTyp ty2)
+	    | cvtTyp (PT.TUPLEty tys) = A.TUPLEty(List.map cvtTyp tys)
 	    | cvtTyp (PT.RECORDty flds) = let
 		fun cvtFld (id, ty, doc) = (id, cvtTyp ty, cvtDoc doc)
 		in
