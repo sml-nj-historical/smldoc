@@ -14,7 +14,7 @@ structure Parser : sig
     structure A = ATree
 
   (* glue together the lexer and parser *)
-    structure SMLParser = SMLDocParseFn(SMLDocLex)
+    structure SMLParser = SMLDocParseFn(SMLDocLexer)
 
   (* error function for lexers *)
     fun lexErr errStrm (pos, msg) = Error.errorAt(errStrm, (pos, pos), msg)
@@ -27,9 +27,9 @@ structure Parser : sig
 	    val inS = TextIO.openIn inFile
 	    val errStrm = Error.mkErrStream inFile
 	    fun get () = TextIO.input inS
-	    val lexer = SMLDocLex.lex (Error.sourceMap errStrm) (lexErr errStrm)
+	    val lexer = SMLDocLexer.lex (Error.sourceMap errStrm) (lexErr errStrm)
 	    in
-	      case SMLDocParser.parse lexer (SMLDocLex.streamify get)
+	      case SMLDocParser.parse lexer (SMLDocLexer.streamify get)
 	       of (SOME pt, _, []) => (
 		    TextIO.closeIn inS;
 		    parseMarkup (errStrm, pt))
@@ -43,70 +43,67 @@ structure Parser : sig
 
   (* convert the parse tree to an annotated tree by parsing the documentation comments *)
     and parseMarkup (errStrm, file) = let
-	  fun cvtDoc NONE = NONE
-	    | cvtDoc (SOME(span, isPre, toks)) =
-		SOME(ParseMarkup.parse (?, isPre, toks))
-		  handle ParseMarup.Error(lnum, msg) => ??
-	  fun cvtTyp (PT.VARty id) = A.VARty id
+	  fun cvtDoc doc = (List.map
+		(fn (span, isPre, toks) => ParseMarkup.parse (?, isPre, toks))
+		  doc
+		) handle ParseMarup.Error(lnum, msg) => ??
+	  fun cvtTyp (PT.VARty tv) = A.VARty tv
 	    | cvtTyp (PT.CONty(tys, id)) = A.CONty(List.map cvtTyp tys, id)
-	    | cvtTyp (PT.FUNty(ty1, ty2)) = A.FUNty(cvtTyp ty1, cvtTy ty2)
+	    | cvtTyp (PT.FUNty(ty1, ty2)) = A.FUNty(cvtTyp ty1, cvtTyp ty2)
 	    | cvtTyp (PT.RECORDty flds) = let
 		fun cvtFld (id, ty, doc) = (id, cvtTyp ty, cvtDoc doc)
 		in
 		  A.RECORDty(List.map cvtFld flds)
 		end
-	    | cvtTyp (PT.PARENty ty) = A.PARENty(cvtTy ty)
-	  fun cvtTop (PT.SIGdec(id, sigExp, whrSpecs)) =
-		A.SIGdec(id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs)
+	    | cvtTyp (PT.PARENty ty) = A.PARENty(cvtTyp ty)
+	  fun cvtTop (PT.SIGdec decs) = let
+		fun cvt (id, sigExp, whrSpecs) = (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs)
+		in
+		  A.SIGdef(List.map cvt decs)
+		end
 	  and cvtSigExp (PT.IDsigexp id) = A.IDsigexp id
-	    | cvtSigExp (PT.SIGsigexp sigbody) = A.SIGsigexp(cvtSigBody sigbody)
-	  and cvtSigBody (PT.SIGbody specs) =
-		A.SIGbody(List.map (fn (doc, spec) => (cvtDoc doc, cvtSpec spec)) specs)
+	    | cvtSigExp (PT.SIGsigexp specs) = A.SIGsigexp(List.map cvtSpec specs)
 	  and cvtSpec spec = (case spec
 		 of PT.INCLspec specs =>
-		      A.INCLspec(List.map (fn (id, whrSpecs) => (id, cvtWhereSpecs whrSpecs)) specs)
-		  | PT.STRspec(id1, id2, whrSpecs) =>
-		      A.STRspec(id1, id2, cvtWhereSpecs whrSpecs)
-		  | PT.STRSIGspec(id, sigBody) => A.STRSIGspec(id, cvtSigBody sigBody)
-		  | PT.SHARINGspec specs => A.SHARINGspec(List.map cvtSharingSpec specs)
-		  | PT.EXNspec specs => let
-		      fun cvt (doc, id, optTy) = (cvtDoc doc, id, Option.map cvtTyp optTy)
+		      A.INCLspec(List.map (fn (id, doc) => (id, cvtDoc doc)) specs)
+		  | PT.INCLWHEREspec(id, whrSpecs, doc) =>
+		      A.INCLWHEREspec(id, cvtWhereSpecs whrSpecs, cvtDoc doc)
+		  | PT.STRspec specs => let
+		      fun cvt (id, sigExp, whrSpecs) = (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs)
 		      in
-		        A.EXNspec(List.map cvt specs)
+			A.STRspec(List.map cvt specs)
 		      end
-		  | PT.TYspec specs => let
-		      fun cvt {doc, eq, params, id, def} = {
-			      doc = cvtDoc doc,
-			      eq = eq, params = params, id = id,
-			      def = Option.map cvtTyp def
+		  | PT.SHAREspec(ids, doc) => A.SHAREspec(ids, cvtDoc doc)
+		  | PT.SHARETYPEspec(ids, doc) => A.SHARETYPEspec(ids, cvtDoc doc)
+		  | PT.TYspec{eq, specs} => let
+		      fun cvt {params, id, def, doc} = {
+			      params = params, id = id,
+			      def = Option.map cvtTyp def,
+			      doc = cvtDoc doc
 			    }
 		      in
-			A.TYspec(List.map cvt specs)
+			A.TYspec{eq = eq, specs = List.map cvt specs}
 		      end
 		  | PT.DTspec specs => let
-		      fun cvtCon (PT.CONspec(id, optTy, doc)) =
-			    A.CONspec(id, Option.map cvtTyp optTy, cvtDoc doc)
-		      fun cvt {doc, params, id, cons} = {
-			      doc = cvtDoc doc,
+		      fun cvt {params, id, cons, doc} = {
 			      params = params, id = id,
-			      cons = List.map cvtCon cons
+			      cons = List.map cvtConSpec cons,
+			      doc = cvtDoc doc
 			    }
 		      in
 			A.DTspec(List.map cvt specs)
 		      end
-		  | PT.DTDEFspec specs => let
-		      fun cvt {doc, id, def} = {doc = cvtDoc doc, id = id, def = def}
-		      in
-			A.DTDEFspec(List.map cvt specs)
-		      end
+		  | PT.DTDEFspec{doc, id, def} =>
+		      A.DTDEFspec{doc = cvtDoc doc, id = id, def = def}
+		  | PT.EXNspec specs => A.EXNspec(List.map cvtConSpec specs)
 		  | PT.VALspec specs => let
 		      fun cvt (doc, id, ty) = (cvtDoc doc, id, cvtTyp ty)
 		      in
 			A.VALspec(List.map cvt specs)
 		      end
 		(* end case *))
-	  and cvtSharingSpec (PT.STRshare ids) = A.STRshare ids
-	    | cvtSharingSpec (PT.TYshare ids) = A.TYshare ids
+	  and cvtConSpec (PT.CONspec(id, optTy, doc)) =
+		A.CONspec(id, Option.map cvtTyp optTy, cvtDoc doc)
 	  and cvtWhereSpecs whrSpecs = let
 		fun cvt (PT.WHEREty{params, id, def}) =
 		      A.WHEREty{params = params, id = id, def = cvtTyp def}

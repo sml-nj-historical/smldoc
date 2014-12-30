@@ -24,14 +24,16 @@ structure Id =
 functor ATreeFn (type doc_comment) =
   struct
 
-  (* documentation comment *)
-    type doc = doc_comment option
+  (* documentation comments *)
+    type doc = doc_comment list
 
     type id = Id.id
 
+    type tyvar = string
+
   (* SML types *)
     datatype typ
-      = VARty of id
+      = VARty of tyvar
       | CONty of (typ list * id)
       | FUNty of (typ * typ)
       | TUPLEty of typ list
@@ -39,55 +41,52 @@ functor ATreeFn (type doc_comment) =
       | PARENty of typ
 
     datatype file
-      = FILE of (doc * (doc * topdec) list)
+      = FILE of (doc * topdec list)
 
     and topdec
-      = SIGdec of id * sigexp * where_spec list
+      = SIGdec of (id * sigexp * where_spec list * doc) list
 
     and sigexp
       = IDsigexp of id
-      | SIGsigexp of sigbody
-
-    and sigbody = SIGbody of (doc * spec) list
+      | SIGsigexp of spec list
 
   (* SML specifications *)
     and spec
-      = INCLspec of (id * where_spec list) list
-      | STRspec of (id * id * where_spec list)
-      | STRSIGspec of (id * sigbody)
-      | SHARINGspec of sharing_spec list
-      | EXNspec of (doc * id * typ option) list
+      = INCLspec of (id * doc) list
+      | INCLWHEREspec of (id * where_spec list * doc)
+      | STRspec of (id * sigexp * where_spec list * doc) list
+      | SHAREspec of (id list * doc)
+      | SHARETYPEspec of (id list * doc)
       | TYspec of {
-	    doc : doc,
 	    eq : bool,
-	    params : id list,
-	    id : id,
-	    def : typ option
-	  } list
+	    specs : {
+		params : tyvar list,
+		id : id,
+		def : typ option,
+		doc : doc
+	      } list
+	  }
       | DTspec of {		(* a list of mutually recursive datatype specs *)
-	    doc : doc,
-	    params : id list,
+	    params : tyvar list,
 	    id : id,
-	    cons : (id * typ option * doc) list
+	    cons : con_spec list,
+	    doc : doc
 	  } list
       | DTDEFspec of {		(* a definition of a datatype *)
-	    doc : doc,
-	    id : string,
-	    def : id
-	  } list
-      | VALspec of (doc * id * typ) list
+	    id : id,
+	    def : id,
+	    doc : doc
+	  }
+      | EXNspec of con_spec list
+      | VALspec of (id * typ * doc) list
 
     and con_spec
-      = CONspec of string * typ option * doc
-
-    and sharing_spec
-      = STRshare of string list
-      | TYshare of string list
+      = CONspec of id * typ option * doc
 
     and where_spec
       = WHEREty of {
-	    params : string list,
-	    id : string,
+	    params : tyvar list,
+	    id : id,
 	    def : typ
 	  }
       | WHEREstr of {

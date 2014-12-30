@@ -73,19 +73,15 @@
     | SEMICOLON			(";")
     | WILD			("_")
   (* literals *)
-    | CHAR of IntInf.int
-    | INT of {
-	  digits: string,
-	  negate: bool,
-	  radix: StringCvt.radix
-	}
+    | CHAR of string
+    | INT of string
     | ID of string
     | SYMID of string
     | LONGID of string
     | REAL of string
-    | STRING of IntInf.int vector
+    | STRING of string
     | TYVAR of string
-    | WORD of {digits: string, radix: StringCvt.radix}
+    | WORD of string
   (* MLton extensions *)
     | KW__build_const		("_build_const")
     | KW__command_line_const	("_command_line_const")
@@ -105,32 +101,38 @@
     ;
 
 %defs(
-structure A = ParseTree
-fun mergeDoc (NONE, d) = d
-  | mergeDoc (d, NONE) = d
-  | mergeDoc (SOME((p1, _), isPre, toks1), SOME((_, p2), _, toks2)) =
-      SOME((p1, p2), isPre, toks1 @ toks2)
+  structure A = ParseTree
+
+  fun mergeDoc (NONE, d) = d
+    | mergeDoc (d, NONE) = d
+    | mergeDoc (SOME((p1, _), isPre, toks1), SOME((_, p2), _, toks2)) =
+	SOME((p1, p2), isPre, toks1 @ toks2)
+
+  fun optList NONE = []
+    | optList (SOME l) = l
+
+  fun mkFunTy (ty, []) = ty
+    | mkFunTy (ty, ty' :: tys) = A.FUNty(ty, mkFunTy(ty', tys))
+
+  fun mkTyApp ty [] = ty
+    | mkTyApp ty (id::r) = mkTyApp (A.CONty([ty], id)) r
 );
 
 program
 	: topdec' topdec*
-		=> (A.FILE(NONE, topdec' :: topdec))
-	| doc (BLANKLN? doc)? topdec' topdec*
-		=> (A.FILE(SOME doc, (SR, topdec') :: topdec))
+		=> (A.FILE([], topdec' [] :: topdec))
+	| doc opt_doc topdec' topdec*
+		=> (A.FILE([doc], topdec' opt_doc :: topdec))
 	;
 
 topdec
-	: doc? topdec'
-		=> (let
-		    val (d, td)::r = topdec'
-		    in
-		      (mergeDoc(doc, d), td) :: r
-		    end)
+	: opt_doc topdec'
+		=> (topdec' opt_doc)
 	;
 
 topdec'
 	: "signature" sigbinds
-		=> (sigbinds)
+		=> (fn preDoc => A.SIGdec(sigbinds preDoc))
 	;
 
 (*---------------------------------------------------*)
@@ -138,18 +140,16 @@ topdec'
 (*---------------------------------------------------*)
 
 sigbinds
-	: sigbind (doc? "and" sigbind => (doc, sigbind))*
-		=> (sigbind :: SR)
+	: sigbind (opt_doc "and" sigbind => (sigbind opt_doc))*
+		=> (fn preDoc => sigbind preDoc :: SR)
 	;
 
 sigbind
-	: sigbind' after_doc?
-		=> (after_doc, sigbind')
-	;
-
-sigbind'
-	: id "=" sigexp
-		=> (let val (a, b) = sigexp in A.SIGdec(id, a, b) end)
+	: id "=" sigexp opt_after_doc
+		=> (fn preDoc => let val (sigExp : A.sigexp, wSpecs) = sigexp
+		      in
+			(id, sigExp, wSpecs, preDoc @ opt_after_doc)
+		      end)
 	;
 
 sigexp
@@ -190,99 +190,131 @@ specs
 spec
 	: ";"
 		=> (NONE)
-	| doc? spec'
-		=> (SOME(doc, spec'))
+	| opt_doc spec'
+		=> (SOME(spec' opt_doc))
 	;
 
-spec'	: "val" valdesc (doc? "and" valdesc)*
+spec'	: "include" id opt_after_doc (opt_doc id opt_after_doc => (id, opt_doc @ opt_after_doc))+
+		=> (fn preDoc => A.INCLspec((id, preDoc @ opt_after_doc) :: SR))
+	| "include" id wherespecs opt_after_doc
+		=> (fn preDoc => A.INCLWHEREspec(id, wherespecs, preDoc @ opt_after_doc))
+	| "structure" strdesc (opt_doc "and" strdesc)*
+		=> (fn preDoc => raise Fail "unimplemented")
+	| "sharing" "type" sharingeqns opt_after_doc
+		=> (fn preDoc => A.SHARETYPEspec(sharingeqns, preDoc @ opt_after_doc))
+	| "sharing" sharingeqns opt_after_doc
+		=> (fn preDoc => A.SHAREspec(sharingeqns, preDoc @ opt_after_doc))
 	| "type" tyvars id typerest
-	| "eqtype" typdesc (doc? "and" typdesc)*
+		=> (fn doc => A.TYspec{eq = false, specs = typerest(doc, tyvars, id)})
+	| "eqtype" typdesc (opt_doc "and" typdesc => (typdesc opt_doc))*
+		=> (fn preDoc => A.TYspec{eq = true, specs = typdesc preDoc :: SR})
 	| "datatype" tyvars id datarest
-	| "exception" condef (doc? "and" condef)*
-	| "structure" strdesc (doc? "and" strdesc)*
-	| "include" id wherespecs
-	| "include" id id+
-	| "sharing" "type" sharingeqns
-	| "sharing" sharingeqns
+		=> (fn preDoc => datarest (preDoc, tyvars, id))
+	| "exception" condef (opt_doc "and" condef => (condef opt_doc))*
+		=> (fn preDoc => A.EXNspec(condef preDoc :: SR))
+	| "val" valdesc (opt_doc "and" valdesc => (valdesc opt_doc))*
+		=> (fn preDoc => A.VALspec(valdesc preDoc :: SR))
 	;
 
 valdesc
-	: valdesc' after_doc?
-	;
-
-valdesc'
-	: id ":" typ
+	: id ":" typ opt_after_doc
+		=> (fn preDoc => (id, typ, preDoc @ opt_after_doc))
 	;
 
 (* the rest of a "type" tyvars id ... *)
 typerest
-	: ("and" typdesc)*
-	| "=" typ after_doc?
+	: opt_after_doc (opt_doc "and" typdesc => (typdesc opt_doc))*
+		=> (fn (preDoc, params, id) =>
+		      {params = params, id = id, def = NONE, doc = preDoc @ opt_after_doc} :: SR)
+	| "=" typ opt_after_doc
+		=> (fn (preDoc, params, id) =>
+		      [{params = params, id = id, def = SOME typ, doc = preDoc @ opt_after_doc}])
 	;
 
 typdesc
-	: typedesc' after_doc?
-	;
-
-typedesc'
-	: tyvars id
+	: tyvars id opt_after_doc
+		=> (fn preDoc => {params = tyvars, id = id, def = NONE, doc = preDoc @ opt_after_doc})
 	;
 
 (* the rest of a "datatype" tyvars id ... *)
 datarest
-	: "=" condefs ("and" datadef)*
-	| "=" "datatype" longid
+	: opt_doc "=" condefs (opt_doc "and" datadef => (datadef opt_doc))*
+		=> (fn (doc, params, id) =>
+		      A.DTspec({params = params, id = id, cons = condefs opt_doc, doc = doc} :: SR))
+	| "=" "datatype" longid opt_after_doc
+		=> (fn (doc, _, id) =>
+		      A.DTDEFspec{id = id, def = longid, doc = doc @ opt_after_doc})
 	;
 
 datadef
-	: datadef' after_doc?
-	;
-
-datadef'
-	: tyvars id "=" condefs
+	: tyvars id opt_doc "=" condefs
+		=> (fn doc => {params = tyvars, id = id, cons = condefs opt_doc, doc = doc})
 	;
 
 condefs
-	: condef ("|" condef)*
+	: condef (opt_doc "|" condef => (condef opt_doc))*
+		=> (fn preDoc => (condef preDoc :: SR))
 	;
 
 condef
-	: id ("of" typ)?
+	: id ("of" typ)? opt_after_doc
+		=> (fn preDoc => A.CONspec(id, SR, preDoc @ opt_after_doc))
 	;
 
 strdesc
 	: ID ":" sigexp
+		=> ()
 	;
 
 sharingeqns
 	: longid ("=" longid)+
+		=> (longid :: SR)
 	;
 
 (*---------------------------------------------------*)
 (*                       Types                       *)
 (*---------------------------------------------------*)
 
+(* QUESTION: should we have two versions of the type grammar. One with and one without
+ * annotations?
+ *)
+
 typ
 	: tupletyp ("->" tupletyp)*
+		=> (mkFunTy (tupletyp, SR))
 	;
 
 tupletyp
 	: typapp ("*" typapp)*
+		=> (case SR
+		     of [] => typapp
+		      | tys => A.TUPLEty(typapp :: tys)
+		    (* end case *))
 	;
 
 typapp
 	: atyp longid*
+		=> (atyp longid)
 	;
 
 atyp
 	: TYVAR
+		=> (mkTyApp (A.VARty TYVAR))
 	| longid
-	| "{" (fieldtyp ("," fieldtyp)* )? "}"
+		=> (mkTyApp (A.CONty([], longid)))
+	| "{" (fieldtyp ("," fieldtyp)* => (fieldtyp :: SR))? "}"
+		=> (mkTyApp (A.RECORDty(optList SR)))
 	| "(" typ ("," typ)* ")"
+		=> (fn ids => (case (typ::SR, ids)
+		       of ([typ], []) => A.PARENty typ
+			| (typs, id::r) => mkTyApp (A.CONty(typs, id)) r
+			| (typs, []) => A.CONty(typs, Id.new "*bogus*")
+		      (* end case *)))
 	;
 
 fieldtyp
-	: label ":" typ
+	: label ":" typ opt_after_doc
+		=> (label, typ, opt_after_doc)
 	;
 
 (*---------------------------------------------------*)
@@ -290,30 +322,43 @@ fieldtyp
 (*---------------------------------------------------*)
 
 id
-	: ID
-	| SYMID
+	: ID		=> (Id.new ID)
+	| SYMID		=> (Id.new SYMID)
 	;
 
 tyvars
 	: (* empty *)
+		=> ([])
 	| TYVAR
+		=> ([TYVAR])
 	| "(" TYVAR ("," TYVAR)* ")"
+		=> (TYVAR :: SR)
 	;
 
 longid
-	: ID
-	| SYMID
-	| LONGID
+	: ID		=> (Id.new ID)
+	| SYMID		=> (Id.new SYMID)
+	| LONGID	=> (Id.new LONGID)
 	;
 
 label
-	: ID
-	| INT
+	: ID		=> (Id.new ID)
+	| INT		=> (Id.new INT)
 	;
 
 (*---------------------------------------------------*)
 (*             Documantation comments                *)
 (*---------------------------------------------------*)
+
+opt_doc
+	: (* empty *)	=> ([])
+	| doc		=> ([doc])
+	;
+
+opt_after_doc
+	: (* empty *)	=> ([])
+	| after_doc	=> ([after_doc])
+	;
 
 doc	: COMMENT
 		=> (FULL_SPAN, true, COMMENT)
