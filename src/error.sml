@@ -41,8 +41,10 @@ structure Error :> sig
   (* source-code locations *)
     datatype location
       = UNKNOWN
+      | LINE of {file : string, lnum : int}
       | LOC of {file : string, l1 : int, c1 : int, l2 : int, c2 : int}
 
+    val line : err_stream * int -> location
     val location : err_stream * span -> location
     val position : err_stream * pos -> location
 
@@ -142,7 +144,14 @@ structure Error :> sig
   (* source-code locations *)
     datatype location
       = UNKNOWN
+      | LINE of {file : string, lnum : int}
       | LOC of {file : string, l1 : int, c1 : int, l2 : int, c2 : int}
+
+    fun line (ES{sm, ...}, n) = let
+	  val SOME f = SP.fileName sm 1
+	  in
+	    LINE{file = f, lnum = n}
+	  end
 
     fun location (ES{sm, ...}, (p1, p2) : span) =
 	  if (p1 = p2)
@@ -167,6 +176,7 @@ structure Error :> sig
 	  end
 
     fun locToString UNKNOWN = "<unknown>"
+      | locToString (LINE{file, lnum}) = F.format "[%s:%d] " [F.STR file, F.INT lnum]
       | locToString (LOC{file, l1, l2, c1, c2}) =
 	  if (l1 = l2)
 	    then if (c1 = c2)

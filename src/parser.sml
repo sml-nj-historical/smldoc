@@ -14,10 +14,22 @@ structure Parser : sig
     structure A = ATree
 
   (* glue together the lexer and parser *)
-    structure SMLParser = SMLDocParseFn(SMLDocLexer)
+    structure SMLDocParser = SMLDocParseFn(SMLDocLexer)
 
   (* error function for lexers *)
     fun lexErr errStrm (pos, msg) = Error.errorAt(errStrm, (pos, pos), msg)
+
+  (* map tokens to strings *)
+    fun tokToString (SMLDocTokens.CHAR c) = c
+      | tokToString (SMLDocTokens.INT s) = s
+      | tokToString (SMLDocTokens.ID id) = Atom.toString id
+      | tokToString (SMLDocTokens.SYMID id) = Atom.toString id
+      | tokToString (SMLDocTokens.LONGID id) = Atom.toString id
+      | tokToString (SMLDocTokens.REAL s) = s
+      | tokToString (SMLDocTokens.STRING s) = s
+      | tokToString (SMLDocTokens.TYVAR s) = s
+      | tokToString (SMLDocTokens.WORD s) = s
+      | tokToString tok = SMLDocTokens.toString tok
 
   (* error function for parsers *)
     val parseErr = Error.parseError tokToString
@@ -32,7 +44,7 @@ structure Parser : sig
 	      case SMLDocParser.parse lexer (SMLDocLexer.streamify get)
 	       of (SOME pt, _, []) => (
 		    TextIO.closeIn inS;
-		    parseMarkup (errStrm, pt))
+		    SOME (parseMarkup (errStrm, pt)))
 		| (_, _, errs) => (
 		    TextIO.closeIn inS;
 		    List.app (parseErr errStrm) errs;
@@ -43,10 +55,19 @@ structure Parser : sig
 
   (* convert the parse tree to an annotated tree by parsing the documentation comments *)
     and parseMarkup (errStrm, file) = let
-	  fun cvtDoc doc = (List.map
-		(fn (span, isPre, toks) => ParseMarkup.parse (?, isPre, toks))
-		  doc
-		) handle ParseMarup.Error(lnum, msg) => ??
+	  fun cvtDoc doc = let
+		fun parseMarkup ((p1, _), isPre, toks) = let
+		      val lnum = AntlrStreamPos.lineNo (Error.sourceMap errStrm) p1
+		      in
+			ParseMarkup.parse (lnum, isPre, toks)
+			  handle ParseMarkup.Error(lnum, msg) => (
+(* FIXME: want to report the line number too! *)
+			    Error.error(errStrm, [msg]);
+			    {pre = isPre, desc = [], tags = []})
+		      end
+		in
+		  List.map parseMarkup doc
+		end
 	  fun cvtTyp (PT.VARty tv) = A.VARty tv
 	    | cvtTyp (PT.CONty(tys, id)) = A.CONty(List.map cvtTyp tys, id)
 	    | cvtTyp (PT.FUNty(ty1, ty2)) = A.FUNty(cvtTyp ty1, cvtTyp ty2)
@@ -57,9 +78,10 @@ structure Parser : sig
 		end
 	    | cvtTyp (PT.PARENty ty) = A.PARENty(cvtTyp ty)
 	  fun cvtTop (PT.SIGdec decs) = let
-		fun cvt (id, sigExp, whrSpecs) = (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs)
+		fun cvt (id, sigExp, whrSpecs, doc) =
+		      (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs, cvtDoc doc)
 		in
-		  A.SIGdef(List.map cvt decs)
+		  A.SIGdec(List.map cvt decs)
 		end
 	  and cvtSigExp (PT.IDsigexp id) = A.IDsigexp id
 	    | cvtSigExp (PT.SIGsigexp specs) = A.SIGsigexp(List.map cvtSpec specs)
@@ -69,7 +91,8 @@ structure Parser : sig
 		  | PT.INCLWHEREspec(id, whrSpecs, doc) =>
 		      A.INCLWHEREspec(id, cvtWhereSpecs whrSpecs, cvtDoc doc)
 		  | PT.STRspec specs => let
-		      fun cvt (id, sigExp, whrSpecs) = (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs)
+		      fun cvt (id, sigExp, whrSpecs, doc) =
+			    (id, cvtSigExp sigExp, cvtWhereSpecs whrSpecs, cvtDoc doc)
 		      in
 			A.STRspec(List.map cvt specs)
 		      end
@@ -97,7 +120,7 @@ structure Parser : sig
 		      A.DTDEFspec{doc = cvtDoc doc, id = id, def = def}
 		  | PT.EXNspec specs => A.EXNspec(List.map cvtConSpec specs)
 		  | PT.VALspec specs => let
-		      fun cvt (doc, id, ty) = (cvtDoc doc, id, cvtTyp ty)
+		      fun cvt (id, ty, doc) = (id, cvtTyp ty, cvtDoc doc)
 		      in
 			A.VALspec(List.map cvt specs)
 		      end

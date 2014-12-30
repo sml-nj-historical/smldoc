@@ -22,17 +22,29 @@
 
   (* count nesting level of comments *)
     val commentLevel = ref 0;
+    val commentStart : AntlrStreamPos.pos ref = ref 0
 
   (* buffer for scanning strings *)
     val stringBuf : string list ref = ref []
-    val stringtype = ref true	(* true for strings, false for char *)
-    val stringStart : AntlrStreamPos.pos ref = ref 0
+    val isChar = ref true	(* true for char, false for string *)
     fun addString s = (stringBuf := s :: !stringBuf)
+    fun mkString () = let
+	  val s = String.concat(List.rev(!stringBuf))
+          in
+            stringBuf := [];
+            if !isChar then T.CHAR s else T.STRING s
+          end
 
   (* markup token buffer for scanning documentation comments *)
     val markup : MT.token list ref = ref[]
+    val isAfter = ref false
     fun addMarkup tok = (markup := tok :: !markup)
-    fun getMarkup () = (List.rev(!markup) before markup := [])
+    fun mkComment () = let
+	  val toks = List.rev(!markup)
+	  in
+	    markup := [];
+	    if !isAfter then T.AFTER_COMMENT toks else T.COMMENT toks
+	  end
 );
 
 %let alphanum = [A-Za-z'_0-9]*;
@@ -54,7 +66,7 @@
 %let hexnum = {hexDigit}+;
 
 (* C - comments; S - string; F - split strings; DC - documentation comment; *)
-%states INITIAL C S F DC;
+%states INITIAL C S F DC, DC_BOL;
 
 (**** Punctuation ****)
 <INITIAL>","	=> (T.COMMA);
@@ -82,93 +94,68 @@
 <INITIAL>"0wx"{hexnum}
 		=> (T.WORD yytext);
 
-<INITIAL>\"     => (charlist := [yytext]
-                    ; stringStart := yypos
-                    ; stringtype := true
-                    ; YYBEGIN S
-                    ; continue ());
-<INITIAL>\#\"   => (charlist := [yytext]
-                    ; stringStart := yypos
-                    ; stringtype := false
-                    ; YYBEGIN S
-                    ; continue ());
+<INITIAL>\"     => (stringBuf := [yytext];
+                    isChar := false;
+                    YYBEGIN S;
+                    continue ());
+<INITIAL>\#\"   => (stringBuf := [yytext];
+                    isChar := true;
+                    YYBEGIN S;
+                    continue ());
 
 (**** Comments ****)
-<INITIAL>"(**)"	=> (skip());
-<INITIAL>"(**""*"+")"	
-	=> (skip());
-<INITIAL>"(**<"	=> (YYBEGIN DC; T.AFTER_COMMENT(continue()) before YYBEGIN INITIAL);
-<INITIAL>"(**"	=> (YYBEGIN DC; T.COMMENT(continue()) before YYBEGIN INITIAL);
-<INITIAL>"(*"   => (YYBEGIN C;
-		    commentLevel := 1
-                    commentStart := Source.getPos (source, Position.toInt yypos);
-                    continue ());
+<INITIAL>"(**)"		=> (skip());
+<INITIAL>"(**""*"+")"	=> (skip());
+<INITIAL>"(**<"		=> (YYBEGIN DC;
+			    isAfter := true;
+			    continue());
+<INITIAL>"(**"		=> (YYBEGIN DC;
+			    isAfter := false;
+			    continue());
+<INITIAL>"(*"   	=> (YYBEGIN C;
+			    commentLevel := 1;
+			    commentStart := yypos;
+			    continue ());
 
-<INITIAL>.      => (error (source, yypos, yypos + 1, "illegal token"); continue ());
+<INITIAL>.      	=> (lexErr (yypos, ["bad input character '", String.toString yytext, "'"]);
+			    continue ());
 
-<C>"(*"         => (inc commentLevel; continue ());
-<C>\n           => (Source.newline (source, Position.toInt yypos) ; continue ());
-<C>"*)"         => (dec commentLevel;
-                    if 0 = !commentLevel then YYBEGIN INITIAL else ();
-                    continue ());
-<C>.            => (continue ());
+<C>"(*"         	=> (inc commentLevel; continue ());
+<C>{eol}           	=> (continue ());
+<C>"*)"         	=> (dec commentLevel;
+			    if 0 = !commentLevel then YYBEGIN INITIAL else ();
+			    continue ());
+<C>.            	=> (continue ());
 
 (***** Strings *****)
-<S>"\""		=> (let
-		    val s = String.concat (List.rev ("\"" :: !stringBuf))
-		    val _ = stringBuf := []
-		    in
-		      YYBEGIN INITIAL;
-		      if !stringtype
-			then T.STRING s
-			else T.CHAR s
-		    end);
-<S>\\a          => (addString "\a"; continue ());
-<S>\\b          => (addString "\b"; continue ());
-<S>\\f          => (addString "\f"; continue ());
-<S>\\n          => (addString "\n"; continue ());
-<S>\\r          => (addString "\r"; continue ());
-<S>\\t          => (addString "\t"; continue ());
-<S>\\v          => (addString "\v"; continue ());
-<S>\\\^[@-_]    => (addChar (Char.chr(Char.ord(String.sub(yytext, 2)) - Char.ord #"@"));
-                    continue ());
-<S>\\\^.
-		=> (error (source, yypos, yypos + 2,
-		      "illegal control escape; must be one of @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
-		    continue ());
-<S>\\[0-9]{3}
-		=> (let
-		    fun c (i, scale) = scale * (Char.ord(String.sub (yytext, i)) - Char.ord #"0")
-		    val () = addOrd (IntInf.fromInt (c (1, 100) + c (2, 10) + c (3, 1)))
-		    in
-		      continue ()
-		    end);
-<S>\\u{hexDigit}{4}
-		=> (addHexEscape (String.substring (yytext, 2, 4), source, yypos); continue ());
-<S>\\U{hexDigit}{8}
-		=> (addHexEscape (String.substring (yytext, 2, 8), source, yypos); continue ());
-<S>"\\\""
-		=> (addString "\""; continue ());
-<S>\\\\
-		=> (addString "\\"; continue ());
-<S>\\{nrws}
-		=> (YYBEGIN F; continue ());
-<S>\\{eol}
-		=> (Source.newline (source, (Position.toInt yypos) + 1) ; YYBEGIN F ; continue ());
-<S>\\		=> (stringError (source, yypos, "illegal string escape"); continue ());
-<S>{eol}
-		=> (Source.newline (source, Position.toInt yypos);
-		    stringError (source, yypos, "unclosed string")
-		    continue ());
-<S>.		=> (addString yytext; continue ());
+<S>"\""			=> (YYBEGIN INITIAL; mkString())
+<S>\\[abfnrtv]		=> (addString yytext; continue ());
+<S>\\\^[@-_]    	=> (addString yytext; continue ());
+<S>\\\^.		=> (lexErr (yypos,
+			      ["illegal control escape; must be one of @ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"]);
+			    continue ());
+<S>\\[0-9]{3}		=> (addString yytext; continue ());
+<S>\\u{hexDigit}{4}	=> (addString yytext; continue ());
+<S>\\U{hexDigit}{8}	=> (addString yytext; continue ());
+<S>"\\\""		=> (addString yytext; continue ());
+<S>\\\\			=> (addString yytext; continue ());
+<S>\\{nrws}		=> (YYBEGIN F; addString yytext; continue ());
+<S>\\{eol}		=> (YYBEGIN F; 
+			    addString yytext;
+			    continue ());
+<S>\\			=> (lexErr (yypos, ["illegal string escape"]); continue ());
+<S>{eol}		=> (lexErr (yypos, ["unclosed string"])
+			    continue ());
+<S>.			=> (addString yytext; continue ());
 
-<F>{eol}        => (Source.newline (source, Position.toInt yypos) ; continue ());
-<F>{ws}         => (continue ());
-<F>\\           => (YYBEGIN S
-                    ; stringStart := Source.getPos (source, Position.toInt yypos)
-                    ; continue ());
-<F>.            => (stringError (source, yypos, "unclosed string")
-                    ; continue ());
+<F>{eol}        	=> (addString yytext;
+			    continue ());
+<F>{ws}         	=> (addString yytext; continue ());
+<F>\\           	=> (YYBEGIN S;
+			    addString yytext; 
+			    continue ());
+<F>.            	=> (lexErr (yypos, ["unclosed string"]);
+			    continue ());
 
 (**** Documentation comments ****
  *
@@ -177,13 +164,14 @@
  * SML parser token (wrapped with either COMMENT or AFTER_COMMENT).
  *)
 
+<DC,DC_BOL>"*)"		=> (YYBEGIN INITIAL; mkComment());
+
 (* the DC_BOL state handles prefixes at the beginning of a line *)
 <DC_BOL>{ws}*"*"*{ws}*{eol}
 			=> (addMarkup MT.BLANKLN; continue());
 <DC_BOL>{ws}*"*"*	=> (YYBEGIN DC; continue());
-<DC>{eol}		=> (addMarkup MT.NL; YYBEGIN DC_BOL; continue());
+<DC>{eol}		=> (addMarkup MT.EOL; YYBEGIN DC_BOL; continue());
 
-<DC,DC_BOL>"*)"		=> (getMarkup());
 <DC>"@"([a-zA-Z0-9]+)	=> (addMarkup (MT.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE))));
 			    continue());
 
@@ -191,13 +179,11 @@
 <DC>"\\i{"		=> (addMarkup MT.ITALIC; continue());
 <DC>"\\e{"		=> (addMarkup MT.EMPH; continue());
 <DC>"\\begin{"[a-zA-Z0-9]*"}"
-			=> (
-			    addMarkup (MT.BEGIN(Atom.atom'(
+			=> (addMarkup (MT.BEGIN(Atom.atom'(
 			      SS.slice(yysubstr, 7, SOME(SS.size yysubstr - 8)))));
 			    continue());
 <DC>"\\end{"[a-zA-Z0-9]*"}"
-			=> (
-			    addMarkup (MT.END(Atom.atom'(
+			=> (addMarkup (MT.END(Atom.atom'(
 			      SS.slice(yysubstr, 5, SOME(SS.size yysubstr - 6)))));
 			    continue());
 <DC>"\\item"		=> (addMarkup MT.ITEM; continue());
