@@ -14,7 +14,7 @@ structure Error :> sig
 
     type err_stream
 
-  (* make an error stream. *)
+  (* make an error stream from a filename. *)
     val mkErrStream : string -> err_stream
 
     val anyErrors : err_stream -> bool
@@ -24,6 +24,7 @@ structure Error :> sig
   (* add error messages to the error stream *)
     val error : err_stream * string list -> unit
     val errorAt : err_stream * span * string list -> unit
+    val errorAtLine : err_stream * int * string list -> unit
 
   (* add warning messages to the error stream *)
     val warning : err_stream * string list -> unit
@@ -37,18 +38,6 @@ structure Error :> sig
 
   (* print the errors to an output stream *)
     val report : TextIO.outstream * err_stream -> unit
-
-  (* source-code locations *)
-    datatype location
-      = UNKNOWN
-      | LINE of {file : string, lnum : int}
-      | LOC of {file : string, l1 : int, c1 : int, l2 : int, c2 : int}
-
-    val line : err_stream * int -> location
-    val location : err_stream * span -> location
-    val position : err_stream * pos -> location
-
-    val locToString : location -> string
 
   (* a term marked with a source-map span *)
     type 'a mark = {span : span, tree : 'a}
@@ -64,9 +53,15 @@ structure Error :> sig
 
     datatype severity = WARN | ERR
 
+  (* source-code locations *)
+    datatype location
+      = UNKNOWN
+      | LINE of int
+      | LOC of {l1 : int, c1 : int, l2 : int, c2 : int}
+
     type error = {
 	kind : severity,
-	pos : span option,
+	loc : location,
 	msg : string
       }
 
@@ -95,13 +90,38 @@ structure Error :> sig
     fun sourceFile (ES{srcFile, ...}) = srcFile
     fun sourceMap (ES{sm, ...}) = sm
 
-    fun addErr (ES{errors, numErrors, ...}, pos, msg) = (
+    fun addErr (ES{errors, numErrors, ...}, loc, msg) = (
 	  numErrors := !numErrors + 1;
-	  errors := {kind=ERR, pos=pos, msg=msg} :: !errors)
+	  errors := {kind=ERR, loc=loc, msg=String.concat msg} :: !errors)
 	  
-    fun addWarn (ES{errors, numWarnings, ...}, pos, msg) = (
+    fun addWarn (ES{errors, numWarnings, ...}, loc, msg) = (
 	  numWarnings := !numWarnings + 1;
-	  errors := {kind=WARN, pos=pos, msg=msg} :: !errors)
+	  errors := {kind=WARN, loc=loc, msg=String.concat msg} :: !errors)
+
+  (* make a location from a line number *)
+    fun line (ES{sm, ...}, n) = LINE n
+
+  (* make a location from a span *)
+    fun location (ES{sm, ...}, (p1, p2) : span) =
+	  if (p1 = p2)
+	    then let
+	      val {lineNo, colNo, ...} = SP.sourceLoc sm p1
+	      in
+		LOC{l1=lineNo, c1=colNo, l2=lineNo, c2=colNo}
+	      end
+	    else let
+	      val {lineNo=l1, colNo=c1, ...} = SP.sourceLoc sm p1
+	      val {lineNo=l2, colNo=c2, ...} = SP.sourceLoc sm p2
+	      in
+		LOC{l1=l1, c1=c1, l2=l2, c2=c2}
+	      end
+
+  (* make a location from a position *)
+    fun position (ES{sm, ...}, p : pos) = let
+	  val {lineNo, colNo, ...} = SP.sourceLoc sm p
+	  in
+	    LOC{l1=lineNo, c1=colNo, l2=lineNo, c2=colNo}
+	  end
 
     fun parseError tok2str es (pos, repair) = let
 	  val toksToStr = (String.concatWith " ") o (List.map tok2str)
@@ -115,111 +135,63 @@ structure Error :> sig
 		  | Repair.FailureAt tok => ["syntax error at ", tok2str tok]
 		(* end case *))
 	  in
-	    addErr (es, SOME(pos, pos), String.concat msg)
+	    addErr (es, position (es, pos), msg)
 	  end
 
   (* add error messages to the error stream *)
-    fun error (es, msg) = addErr (es, NONE, String.concat msg)
-    fun errorAt (es, span, msg) = addErr (es, SOME span, String.concat msg)
+    fun error (es, msg) = addErr (es, UNKNOWN, msg)
+    fun errorAt (es, span, msg) = addErr (es, location(es, span), msg)
+    fun errorAtLine (es, lnum, msg) = addErr (es, line(es, lnum), msg)
 
   (* add warning messages to the error stream *)
-    fun warning (es, msg) = addWarn (es, NONE, String.concat msg)
-    fun warningAt (es, span, msg) = addWarn (es, SOME span, String.concat msg)
+    fun warning (es, msg) = addWarn (es, UNKNOWN, msg)
+    fun warningAt (es, span, msg) = addWarn (es, location(es, span), msg)
 
   (* sort a list of errors by position in the source file *)
     val sort = let
-	  fun gt (NONE, NONE) = false
-	    | gt (NONE, _) = true
-	    | gt (_, NONE) = false
-	    | gt (SOME(l1, r1), SOME(l2, r2)) = (case Position.compare(l1, l2)
+	  fun gt (UNKNOWN, UNKNOWN) = false
+	    | gt (UNKNOWN, _) = true
+	    | gt (_, UNKNOWN) = false
+	    | gt (LINE l1, LINE l2) = (l1 > l2)
+	    | gt (LINE n, LOC{l1, ...}) = (n > l1)
+	    | gt (LOC{l1, ...}, LINE n) = (l1 > n)
+	    | gt (LOC loc1, LOC loc2) = (case Int.compare(#l1 loc1, #l1 loc2)
 		 of LESS => false
-		  | EQUAL => (Position.compare(r1, r2) = GREATER)
+		  | EQUAL => (case Int.compare (#c1 loc1, #c1 loc2)
+		       of LESS => false
+		        | EQUAL => (case Int.compare (#l2 loc1, #l2 loc2)
+			     of LESS => false
+			      | EQUAL => (#c2 loc1 > #c2 loc2)
+			      | GREATER => true
+			    (* end case *))
+			| GREATER => true
+		      (* end case *))
 		  | GREATER => true
 		(* end case *))
-	  fun cmp (e1 : error, e2 : error) = gt(#pos e1, #pos e2)
+	  fun cmp (e1 : error, e2 : error) = gt(#loc e1, #loc e2)
 	  in
 	    ListMergeSort.sort cmp
 	  end
 
-  (* source-code locations *)
-    datatype location
-      = UNKNOWN
-      | LINE of {file : string, lnum : int}
-      | LOC of {file : string, l1 : int, c1 : int, l2 : int, c2 : int}
-
-    fun line (ES{sm, ...}, n) = let
-	  val SOME f = SP.fileName sm 1
-	  in
-	    LINE{file = f, lnum = n}
-	  end
-
-    fun location (ES{sm, ...}, (p1, p2) : span) =
-	  if (p1 = p2)
-	    then let
-	      val {fileName=SOME f, lineNo, colNo} = SP.sourceLoc sm p1
-	      in
-		LOC{file=f, l1=lineNo, c1=colNo, l2=lineNo, c2=colNo}
-	      end
-	    else let
-	      val {fileName=SOME f1, lineNo=l1, colNo=c1} = SP.sourceLoc sm p1
-	      val {fileName=SOME f2, lineNo=l2, colNo=c2} = SP.sourceLoc sm p2
-	      in
-		if (f1 <> f2)
-		  then LOC{file=f1, l1=l1, c1=c1, l2=l1, c2=c1}
-		  else LOC{file=f1, l1=l1, c1=c1, l2=l2, c2=c2}
-	      end
-
-    fun position (ES{sm, ...}, p : pos) = let
-	  val {fileName=SOME f, lineNo, colNo} = SP.sourceLoc sm p
-	  in
-	    LOC{file=f, l1=lineNo, c1=colNo, l2=lineNo, c2=colNo}
-	  end
-
-    fun locToString UNKNOWN = "<unknown>"
-      | locToString (LINE{file, lnum}) = F.format "[%s:%d] " [F.STR file, F.INT lnum]
-      | locToString (LOC{file, l1, l2, c1, c2}) =
-	  if (l1 = l2)
-	    then if (c1 = c2)
-	      then F.format "[%s:%d.%d] " [F.STR file, F.INT l1, F.INT c1]
-	      else F.format "[%s:%d.%d-%d] " [F.STR file, F.INT l1, F.INT c1, F.INT c2]
-	    else F.format "[%s:%d.%d-%d.%d] " [
-		F.STR file, F.INT l1, F.INT c1, F.INT l2, F.INT c2
-	      ]
-
     fun printError (outStrm, ES{srcFile, sm, ...}) = let
-	  fun pr {kind, pos, msg} = let
+	  fun pr {kind, loc, msg} = let
 		val kind = (case kind of ERR => "Error" | Warn => "Warning")
-		val pos = (case pos
-		       of NONE => concat["[", srcFile, "] "]
-			| SOME(p1, p2) => if (p1 = p2)
-			    then let
-			      val {fileName=SOME f, lineNo, colNo} = SP.sourceLoc sm p1
-			      in
-				F.format "[%s:%d.%d] " [
-				    F.STR f, F.INT lineNo, F.INT colNo
+		val loc = (case loc
+		       of UNKNOWN => concat["[", srcFile, "] "]
+			| LINE n => F.format "[%s:%d] " [F.STR srcFile, F.INT n]
+			| LOC{l1, c1, l2, c2} =>
+			    if (l1 = l2)
+			      then if (c1 = c2)
+				then F.format "[%s:%d.%d] " [F.STR srcFile, F.INT l1, F.INT c1]
+				else F.format "[%s:%d.%d-%d] " [
+				    F.STR srcFile, F.INT l1, F.INT c1, F.INT c2
 				  ]
-			      end
-			    else let
-			      val {fileName=SOME f1, lineNo=l1, colNo=c1} = SP.sourceLoc sm p1
-			      val {fileName=SOME f2, lineNo=l2, colNo=c2} = SP.sourceLoc sm p2
-			      in
-				if (f1 <> f2)
-				  then F.format "[%s:%d.%d-%s:%d.%d] " [
-				      F.STR f1, F.INT l1, F.INT c1,
-				      F.STR f2, F.INT l2, F.INT c2
-				    ]
-				else if (l1 <> l2)
-				  then F.format "[%s:%d.%d-%d.%d] " [
-				      F.STR f1, F.INT l1, F.INT c1,
-				      F.INT l2, F.INT c2
-				    ]
-				  else F.format "[%s:%d.%d-%d] " [
-				      F.STR f1, F.INT l1, F.INT c1, F.INT c2
-				    ]
-			      end
+			      else F.format "[%s:%d.%d-%d.%d] " [
+				  F.STR srcFile, F.INT l1, F.INT c1, F.INT l2, F.INT c2
+				]
 		      (* end case *))
 		in
-		  TextIO.output (outStrm, String.concat [pos, kind, ": ", msg, "\n"])
+		  TextIO.output (outStrm, String.concat [loc, kind, ": ", msg, "\n"])
 		end
 	  in
 	    pr
