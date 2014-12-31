@@ -1,0 +1,32 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *
+ * Front-end library for smldoc tool.
+ *)
+
+Library
+
+  structure ATree
+  structure DocCom
+  structure Id
+  structure Parser
+
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  $/ml-lpt-lib.cm
+
+  atree.sml
+  atree-fn.sml
+  dc-tokens.sml
+  doc-com.sml
+  error.sml
+  keywords.sml
+  parse-doc-com.sml
+  parser.sml
+
+  smldoc.grm : ML-Antlr
+  smldoc.lex : ML-Ulex

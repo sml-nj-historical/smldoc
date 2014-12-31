@@ -16,7 +16,7 @@ structure Convert : sig
     structure DC = DocCom
     structure M = Markup
 
-  (* the generic contents of a documentation coment *)
+  (* the generic contents of a documentation comment *)
     type info = {
 	desc : DC.text_block list, 		(**< The description text. *)
 	authors : string list,			(**< The list of authors in \@author tags. *)
@@ -84,6 +84,33 @@ structure Convert : sig
 	    , params	= List.rev (!params)
 	    , raises	= List.rev (!raises)
 	    , return	= !return
+	    }
+	  end
+
+    fun notEmpty sel (info : info) = (case (sel info) of [] => false | _ => true)
+    fun notNone sel (info : info) = (case (sel info) of NONE => false | _ => true)
+
+  (* convert documentation comment to val-spec info *)
+    fun toValInfo (id : Atom.atom, coms : DC.comment list) : M.val_info = let
+	  val info = dcToInfo coms
+	  fun ignoring tag = print(concat[
+		  "ignoring '@", tag, "' in comment for val '", Atom.toString id, "'\n"
+		])
+	  in
+	  (* warning messages for @-tags that don't belong in a val description *)
+	    if notEmpty #authors info then ignoring "author" else ();
+	    if notNone #version info then ignoring "version" else ();
+	    if notNone #date info then ignoring "date" else ();
+	    if notNone #copy info then ignoring "copy" else ();
+	    if notEmpty #instances info then ignoring "instance" else ();
+	    { desc = #desc info
+	    , sees = #sees info
+	    , since = #since info
+	    , befores = #befores info
+	    , deprecated = #deprecated info
+	    , params = #params info
+	    , raises = #raises info
+	    , return = #return info
 	    }
 	  end
 
