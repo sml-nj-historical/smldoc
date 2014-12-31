@@ -1,0 +1,19 @@
+(* sources.cm
+ *
+ * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
+ * All rights reserved.
+ *)
+
+Library
+
+  structure Convert
+  structure Markup
+
+is
+
+  $/basis.cm
+  $/smlnj-lib.cm
+  ../front-end/sources.cm
+
+  convert.sml
+  markup.sml

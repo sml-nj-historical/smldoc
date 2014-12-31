@@ -29,28 +29,36 @@ structure DocCom =
 
   (** elements in a code string *)
     and code_elem
-      = KW of Atom.atom		(** keyword (including reserved symbols) *)
-      | PUNCT of Atom.atom	(** punctuation *)
-      | ID of Atom.atom		(** identifier *)
-      | LIT of string		(** numeric, character, and string literals *)
-      | COM of string		(** comment *)
-      | WS of string		(** white space (tabs are expanded to spaces) *)
-      | EOL			(** end-of-line *)
+      = KW of Atom.atom		(**< keyword (including reserved symbols) *)
+      | PUNCT of Atom.atom	(**< punctuation *)
+      | ID of Atom.atom		(**< identifier *)
+      | LIT of string		(**< numeric, character, and string literals *)
+      | COM of string		(**< comment *)
+      | WS of string		(**< white space (tabs are expanded to spaces) *)
+      | EOL			(**< end-of-line *)
 
     and tag
       = TAG_author of string
+      | TAG_before of string * text
       | TAG_copy of text
       | TAG_date of {year : int, month : int, day : int}
       | TAG_deprecated of text
-      | TAG_instance of {id : string, desc : text}
-      | TAG_param of {id : string, desc : text}
-      | TAG_raise of {id : string, desc : text}
+      | TAG_instance of id_desc
+      | TAG_param of id_desc
+      | TAG_raise of id_desc
       | TAG_return of text
-      | TAG_see of unit (* FIXME *)
+      | TAG_see of see_ref * text
       | TAG_since of string
       | TAG_version of string
 
+  (** The different forms of references in \@see tags. *)
+    and see_ref
+      = SEE_url of string
+      | SEE_file of string
+      | SEE_doc of string
+
     withtype text = text_elem list
+         and id_desc = {id : string, desc : text}
 
   (** the representation of an SMLdoc comment. **)
     type comment = {
