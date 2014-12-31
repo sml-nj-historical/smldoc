@@ -96,8 +96,8 @@
 *)
   (* documentation comments *)
     | BLANKLN
-    | COMMENT of MarkupTokens.token list
-    | AFTER_COMMENT of MarkupTokens.token list
+    | COMMENT of DCTokens.token list
+    | AFTER_COMMENT of DCTokens.token list
     ;
 
 %defs(

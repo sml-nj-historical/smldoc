@@ -1,13 +1,14 @@
-(* markup-tokens.sml
+(* dc-tokens.sml
  *
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
  * All rights reserved.
+ *
+ * The tokens inside a documentation comment.
  *)
 
-structure MarkupTokens =
+structure DCTokens =
   struct
 
-  (* the tokens in a documentation comment *)
     datatype token
     (* Text markup tokens *)
       = BEGIN of Atom.atom		(* '\begin{xxx}' *)
@@ -19,7 +20,7 @@ structure MarkupTokens =
       | CLOSE				(* '}' *)
       | CODE				(* '[' *)
       | CLOSE_CODE			(* ']' *)
-    (* Code markup tokens *)
+    (* Code markup tokens; these only appear within CODE/CLOSE_CODE pairs *)
       | KW of Atom.atom			(* reserved IDs *)
       | SYM of Atom.atom		(* reserved symbols (e.g., "*", ":=", ...) *)
       | PUNCT of Atom.atom		(* punctuation (e.g., ",", "{", "}", ...) *)

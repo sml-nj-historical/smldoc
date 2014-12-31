@@ -10,7 +10,7 @@
 
 %defs(
     structure T = SMLDocTokens
-    structure MT = MarkupTokens
+    structure DC = DCTokens
     structure SS = Substring
 
     type lex_result = T.token
@@ -35,16 +35,14 @@
             if !isChar then T.CHAR s else T.STRING s
           end
 
-  (* markup token buffer for scanning documentation comments *)
-    val markup : MT.token list ref = ref[]
+  (* token buffer for scanning documentation comments *)
+    val tokens : DC.token list ref = ref[]
     val isAfter = ref false
-    fun addMarkup tok = (
-print(concat["addMarkup(", MT.toString tok, ")\n"]);
-markup := tok :: !markup)
+    fun addToken tok = (tokens := tok :: !tokens)
     fun mkComment () = let
-	  val toks = List.rev(!markup)
+	  val toks = List.rev(!tokens)
 	  in
-	    markup := [];
+	    tokens := [];
 	    if !isAfter then T.AFTER_COMMENT toks else T.COMMENT toks
 	  end
 
@@ -175,56 +173,56 @@ markup := tok :: !markup)
 <DC>"*"*"*)"		=> (YYBEGIN INITIAL; mkComment());
 
 (* the DC_BOL state handles prefixes at the beginning of a line *)
-<DC>{eol}		=> (addMarkup MT.EOL; YYBEGIN DC_BOL; continue());
+<DC>{eol}		=> (addToken DC.EOL; YYBEGIN DC_BOL; continue());
 <DC_BOL>{ws}*"*"*{ws}*{eol}
-			=> (addMarkup MT.BLANKLN; continue());
+			=> (addToken DC.BLANKLN; continue());
 <DC_BOL>{ws}*"*"*"*)"	=> (YYBEGIN INITIAL; mkComment());
 <DC_BOL>{ws}*"*"*	=> (YYBEGIN DC; continue());
 
-<DC>"@"[a-zA-Z0-9]+	=> (addMarkup (MT.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE))));
+<DC>"@"[a-zA-Z0-9]+	=> (addToken (DC.TAG(Atom.atom'(SS.slice(yysubstr, 1, NONE))));
 			    continue());
 
-<DC>"\\b{"		=> (addMarkup MT.BOLD; continue());
-<DC>"\\i{"		=> (addMarkup MT.ITALIC; continue());
-<DC>"\\e{"		=> (addMarkup MT.EMPH; continue());
+<DC>"\\b{"		=> (addToken DC.BOLD; continue());
+<DC>"\\i{"		=> (addToken DC.ITALIC; continue());
+<DC>"\\e{"		=> (addToken DC.EMPH; continue());
 <DC>"\\begin{"[a-zA-Z0-9]*"}"
-			=> (addMarkup (MT.BEGIN(Atom.atom'(
+			=> (addToken (DC.BEGIN(Atom.atom'(
 			      SS.slice(yysubstr, 7, SOME(SS.size yysubstr - 8)))));
 			    continue());
 <DC>"\\end{"[a-zA-Z0-9]*"}"
-			=> (addMarkup (MT.END(Atom.atom'(
+			=> (addToken (DC.END(Atom.atom'(
 			      SS.slice(yysubstr, 5, SOME(SS.size yysubstr - 6)))));
 			    continue());
-<DC>"\\item"		=> (addMarkup MT.ITEM; continue());
-<DC>"}"			=> (addMarkup MT.CLOSE; continue());
+<DC>"\\item"		=> (addToken DC.ITEM; continue());
+<DC>"}"			=> (addToken DC.CLOSE; continue());
 <DC>"["			=> (YYBEGIN CD;
 			    codeLevel := 1;
-			    addMarkup MT.CODE;
+			    addToken DC.CODE;
 			    continue());
-<DC>{dcChr}+		=> (addMarkup (MT.TEXT yytext); continue());
-<DC,CD>{ws}+		=> (addMarkup (MT.WS yytext); continue());
+<DC>{dcChr}+		=> (addToken (DC.TEXT yytext); continue());
+<DC,CD>{ws}+		=> (addToken (DC.WS yytext); continue());
 
-<CD>{eol}		=> (addMarkup MT.EOL; continue());
+<CD>{eol}		=> (addToken DC.EOL; continue());
 <CD>"["			=> (inc codeLevel;
-			    addMarkup (MT.PUNCT(Atom.atom "["));
+			    addToken (DC.PUNCT(Atom.atom "["));
 			    continue());
 <CD>"]"			=> (let val n = !codeLevel - 1
 			    in
 			      if (n = 0)
-				then (YYBEGIN DC; addMarkup MT.CLOSE_CODE)
-				else addMarkup (MT.PUNCT(Atom.atom "]"));
+				then (YYBEGIN DC; addToken DC.CLOSE_CODE)
+				else addToken (DC.PUNCT(Atom.atom "]"));
 			      continue()
 			    end);
-<CD>{alphanumId}	=> (addMarkup (Keywords.idToken' yytext); continue());
-<CD>{symId}		=> (addMarkup (Keywords.symToken' yytext); continue());
+<CD>{alphanumId}	=> (addToken (Keywords.idToken' yytext); continue());
+<CD>{symId}		=> (addToken (Keywords.symToken' yytext); continue());
 
-<CD>{real}		=> (addMarkup (MT.REAL yytext); continue());
-<CD>{num}		=> (addMarkup (MT.INT yytext); continue());
-<CD>"~"{num}		=> (addMarkup (MT.INT yytext); continue());
-<CD>"0x"{hexnum}	=> (addMarkup (MT.INT yytext); continue());
-<CD>"~0x"{hexnum}	=> (addMarkup (MT.INT yytext); continue());
-<CD>"0w"{num}		=> (addMarkup (MT.WORD yytext); continue());
-<CD>"0wx"{hexnum}	=> (addMarkup (MT.WORD yytext); continue());
+<CD>{real}		=> (addToken (DC.REAL yytext); continue());
+<CD>{num}		=> (addToken (DC.INT yytext); continue());
+<CD>"~"{num}		=> (addToken (DC.INT yytext); continue());
+<CD>"0x"{hexnum}	=> (addToken (DC.INT yytext); continue());
+<CD>"~0x"{hexnum}	=> (addToken (DC.INT yytext); continue());
+<CD>"0w"{num}		=> (addToken (DC.WORD yytext); continue());
+<CD>"0wx"{hexnum}	=> (addToken (DC.WORD yytext); continue());
 
-<CD>[,;(){}]		=> (addMarkup (MT.PUNCT(Atom.atom yytext)); continue());
-<CD>"..."		=> (addMarkup (MT.PUNCT(Atom.atom yytext)); continue());
+<CD>[,;(){}]		=> (addToken (DC.PUNCT(Atom.atom yytext)); continue());
+<CD>"..."		=> (addToken (DC.PUNCT(Atom.atom yytext)); continue());

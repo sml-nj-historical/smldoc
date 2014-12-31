@@ -44,7 +44,7 @@ structure Parser : sig
 	      case SMLDocParser.parse lexer (SMLDocLexer.streamify get)
 	       of (SOME pt, _, []) => (
 		    TextIO.closeIn inS;
-		    SOME (parseMarkup (errStrm, pt)))
+		    SOME (parseDocCom (errStrm, pt)))
 		| (_, _, errs) => (
 		    TextIO.closeIn inS;
 		    List.app (parseErr errStrm) errs;
@@ -54,18 +54,18 @@ structure Parser : sig
 	  else NONE
 
   (* convert the parse tree to an annotated tree by parsing the documentation comments *)
-    and parseMarkup (errStrm, file) = let
+    and parseDocCom (errStrm, file) = let
 	  fun cvtDoc doc = let
-		fun parseMarkup ((p1, _), isPre, toks) = let
+		fun parse ((p1, _), isPre, toks) = let
 		      val lnum = AntlrStreamPos.lineNo (Error.sourceMap errStrm) p1
 		      in
-			ParseMarkup.parse (lnum, isPre, toks)
-			  handle ParseMarkup.Error(lnum, msg) => (
+			ParseDocCom.parse (lnum, isPre, toks)
+			  handle ParseDocCom.Error(lnum, msg) => (
 			    Error.errorAtLine (errStrm, lnum, [msg]);
 			    {pre = isPre, desc = [], tags = []})
 		      end
 		in
-		  List.map parseMarkup doc
+		  List.map parse doc
 		end
 	  fun cvtTyp (PT.VARty tv) = A.VARty tv
 	    | cvtTyp (PT.CONty(tys, id)) = A.CONty(List.map cvtTyp tys, id)

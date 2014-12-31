@@ -13,14 +13,14 @@ structure Keywords : sig
     val symToken : string -> SMLDocTokens.token
 
   (** Map alpha-numeric identifiers to documentation comment tokens. *)
-    val idToken' : string -> MarkupTokens.token
+    val idToken' : string -> DCTokens.token
   (** Map symbolic identifiers to documentation comment tokens. *)
-    val symToken' : string -> MarkupTokens.token
+    val symToken' : string -> DCTokens.token
 
   end = struct
 
     structure T = SMLDocTokens
-    structure MT = MarkupTokens
+    structure DC = DCTokens
 
     val keywords = [
 	    ("abstype",		T.KW_abstype),
@@ -110,16 +110,16 @@ structure Keywords : sig
 	  val id = Atom.atom id
 	  in
 	    case find id
-	     of NONE => MT.ID id
-	      | SOME _ => MT.KW id
+	     of NONE => DC.ID id
+	      | SOME _ => DC.KW id
 	    (* end case *)
 	  end
     fun symToken' id = let
 	  val id = Atom.atom id
 	  in
 	    case find id
-	     of NONE => MT.ID id
-	      | SOME _ => MT.SYM id
+	     of NONE => DC.ID id
+	      | SOME _ => DC.SYM id
 	    (* end case *)
 	  end
     end

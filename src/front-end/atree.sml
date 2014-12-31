@@ -6,8 +6,8 @@
 
 (* Annotated tree before parsing markup *)
 structure ParseTree = ATreeFn (
-    type doc_comment = AntlrStreamPos.span * bool * MarkupTokens.token list);
+    type doc_comment = AntlrStreamPos.span * bool * DCTokens.token list);
 
 (* Annotated tree after parsing markup *)
 structure ATree = ATreeFn (
-    type doc_comment = Markup.comment);
+    type doc_comment = DocCom.comment);

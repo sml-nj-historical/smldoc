@@ -1,4 +1,4 @@
-(** @file markup.sml
+(** @file doc-com.sml
  *
  * @copy
  * COPYRIGHT (c) 2014 The Fellowship of SML/NJ (http://www.smlnj.org)
@@ -9,7 +9,7 @@
  * This module describes the representation of SMLdoc comments.
  *)
 
-structure Markup =
+structure DocCom =
   struct
 
   (** a block of text *)
