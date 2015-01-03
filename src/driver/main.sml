@@ -10,6 +10,8 @@ structure Main : sig
 
   end = struct
 
+    fun err msg = TextIO.output(TextIO.stdErr, msg)
+
     fun doFile f = let
 	  val (dir, stem) = let
 		fun split base = let
@@ -33,7 +35,7 @@ structure Main : sig
 		end
 	  in
 	    case Parser.parseFile f
-	     of SOME tree => (case Convert.toMarkup tree
+	     of SOME tree => (case Convert.toMarkup (f, tree)
 		   of [mTree] => () (* FIXME *)
 		    | mTrees => () (* FIXME *)
 		  (* end case *))
@@ -42,13 +44,13 @@ structure Main : sig
 	  end (* doFile *)
 
     fun main (cmdName, args) = (List.app doFile args; OS.Process.success)
-	  handle ex => 
+	  handle ex => (
            err (concat [
-                "uncaught exception ", General.exnName exn,
-                " [", General.exnMessage exn, "]\n"
+                "uncaught exception ", General.exnName ex,
+                " [", General.exnMessage ex, "]\n"
               ]);
             List.app (fn s => err (concat ["  raised at ", s, "\n"]))
-              (SMLofNJ.exnHistory exn);
+              (SMLofNJ.exnHistory ex);
             OS.Process.failure)
 
   end

@@ -8,7 +8,7 @@
 
 structure Convert : sig
 
-    val convert : (string * ATree.file) -> Markup.file list
+    val toMarkup : (string * ATree.file) -> Markup.file list
 
   end = struct
 
@@ -114,7 +114,7 @@ structure Convert : sig
 	    }
 	  end
 
-    fun convert (srcFile, content) = []
+    fun toMarkup (srcFile, content) = []
 
   end
 
