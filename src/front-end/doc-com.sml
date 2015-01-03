@@ -17,6 +17,7 @@ structure DocCom =
       = TB_Text of text
       | TB_Style of Atom.atom * text_block list
       | TB_List of Atom.atom * text_block list list
+      | TB_Code of code_elem list
       | TB_Blank
 
   (** text elements in a SMLdoc comment *)
@@ -32,7 +33,11 @@ structure DocCom =
       = KW of Atom.atom		(**< keyword (including reserved symbols) *)
       | PUNCT of Atom.atom	(**< punctuation *)
       | ID of Atom.atom		(**< identifier *)
-      | LIT of string		(**< numeric, character, and string literals *)
+      | STR of string		(**< string literal *)
+      | CHR of string		(**< character literal *)
+      | INT of string		(**< integer literal *)
+      | WORD of string		(**< word literal *)
+      | REAL of string		(**< real literal *)
       | COM of string		(**< comment *)
       | WS of string		(**< white space (tabs are expanded to spaces) *)
       | EOL			(**< end-of-line *)
