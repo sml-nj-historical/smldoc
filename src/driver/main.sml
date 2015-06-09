@@ -20,6 +20,7 @@ structure Main : sig
 			(dir, file)
 		      end
 		in
+(* TODO: allow CM and MLB files; tweak parser based on input language *)
 		(* Strip off the file extension, which we expect to be one
 		 * of "cml", "pml", "fun", "sig", or "sml".  We ignore
 		 * other extensions.

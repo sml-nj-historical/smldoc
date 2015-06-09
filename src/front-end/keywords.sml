@@ -76,7 +76,19 @@ structure Keywords : sig
 	    (":>",		T.COLONGT),
 	    ("=",		T.EQUALOP),
 	    ("=>",		T.DARROW),
-	    ("#",		T.HASH)
+	    ("#",		T.HASH),
+	  (* SML/NJ extensions *)
+	    ("lazy",		T.KW_lazy),
+	  (* MLton extensions *)
+	    ("_build_const",	T.KW__build_const),
+	    ("_command_line_const", T.KW__command_line_const),
+	    ("_const",		T.KW__const),
+	    ("_address",	T.KW__address),
+	    ("_export",		T.KW__export),
+	    ("_import",		T.KW__import),
+	    ("_overload",	T.KW__overload),
+	    ("_symbol",		T.KW__symbol),
+	    ("_prim",		T.KW__prim)
 	  ]
 
   (* create a keyword lookup table *)

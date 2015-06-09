@@ -82,6 +82,8 @@
     | STRING of string
     | TYVAR of string
     | WORD of string
+  (* SML/NJ extensions *)
+    | KW_lazy			("lazy")
   (* MLton extensions *)
     | KW__build_const		("_build_const")
     | KW__command_line_const	("_command_line_const")
@@ -91,9 +93,7 @@
     | KW__import		("_import")
     | KW__overload		("_overload")
     | KW__symbol		("_symbol")
-(* moved to pml.grm; will remove uses from ml.grm soon
     | KW__prim			("_prim")
-*)
   (* documentation comments *)
     | BLANKLN
     | COMMENT of DCTokens.token list
