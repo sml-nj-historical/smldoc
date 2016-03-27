@@ -81,14 +81,16 @@ use [black]#braces# to denote a list of zero or more elements.
 & &  |  & [blue]+\begin{+ [maroon]_list_ [blue]+}+ [black]#{# [maroon]_item_ [black]#}# [blue]+\end{+ [maroon]_list_ [blue]+}+
         & a list of items.  Note that the beginning [maroon]_list_ style
           and ending [maroon]_list_ style must be the same.
+& &  |  & [blue]+\begin{math+ [blue]+}+ [maroon]_raw-text_ [blue]+\end{+ [blue]+math}+
+        & LaTeX math markup, which will be rendered in display mode.
 & &  |  & [maroon]_blank-line_
-        & a newline separating text blocks
+        & a newline separating text blocks.
 
 & [maroon]_style_
   & ::= & [blue]+center+
-        & center contents of text block
+        & center contents of text block.
 & &  |  & [blue]+quote+
-        & indent contents of text block
+        & indent contents of text block.
 
 & [maroon]_list_
   & ::= & [blue]+itemize+
