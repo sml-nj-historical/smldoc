@@ -1,16 +1,16 @@
 SMLDoc User's Guide
 ===================
 :Author: John Reppy
-:Date: November 16, 2014
+:Date: April 21, 2017
 
 //==============================================================================
 == Introduction
 
 *SMLDoc* is a tool for generating documentation from annotated SML source code.  It is
 modeled after similar tools, such as
-http://caml.inria.fr/pub/docs/manual-ocaml-400/manual029.html[*OCamldoc*],
+http://caml.inria.fr/pub/docs/manual-ocaml/ocamldoc.html[*OCamldoc*],
 http://doxygen.org[*Doxygen*], and.
-https://docs.oracle.com/javase/6/docs/technotes/tools/windows/javadoc.html[*Javadoc*].
+http://docs.oracle.com/javase/8/docs/technotes/tools/windows/javadoc.html[*Javadoc*].
 It currently processes SML signatures, producing HTML output.
 
 //==============================================================================
@@ -62,79 +62,85 @@ The text and some parts of the tags may include text markup annotations.
 The *smldoc* tool supports limited text markup in documentation comments.  The markup
 syntax is a lightweight LaTeX style for the most part. The following grammar describes
 the format of the markup language.  Literal text is in [blue]+blue monospaced+ font,
-terminals and non-terminals are in [maroon]_maroon italics_, and we
-use [black]#braces# to denote a list of zero or more elements.
+terminals and non-terminals are in [maroon]_maroon italics_, we
+use [maroon]#{# [maroon]_item_ [maroon]#}# to denote a list of zero or more items,
+and we write [maroon]#{# [maroon]_item_ [maroon]#}#^[maroon]_n_^ to denote a list
+of [maroon]_n_ items.
 
 [separator="&",grid="none",align="center",width="90%",cols=">2,^1,<6,8"]
 |==============================================================================
 & [maroon]_content_
-  & ::= & [black]#{# [maroon]_text-block_ [black]#}# [black]#{# [maroon]_tag_ [black]#}#
+  & [maroon]#::=# & [maroon]#{# [maroon]_text-block_ [maroon]#}# [maroon]#{# [maroon]_tag_ [maroon]#}#
         & a documentation comment consists of zero or more text blocks followed by zero or
           more documentation tags.
 
 & [maroon]_text-block_
-  & ::= & [maroon]_text_
+  & [maroon]#::=# & [maroon]_text_
         & inline text
-& &  |  & [blue]+\begin{+ [maroon]_style_ [blue]+}+ [maroon]_text-block_ [blue]+\end{+ [maroon]_style_ [blue]+}+
+& & [maroon]#|# & [blue]+\begin{+ [maroon]_style_ [blue]+}+ [maroon]_text-block_ [blue]+\end{+ [maroon]_style_ [blue]+}+
         & format the text block according to [maroon]_style_.  Note that the beginning [maroon]_style_
           and ending [maroon]_style_ must be the same.
-& &  |  & [blue]+\begin{+ [maroon]_list_ [blue]+}+ [black]#{# [maroon]_item_ [black]#}# [blue]+\end{+ [maroon]_list_ [blue]+}+
+& & [maroon]#|# & [blue]+\begin{+ [maroon]_list_ [blue]+}+ [maroon]#{# [maroon]_item_ [maroon]#}# [blue]+\end{+ [maroon]_list_ [blue]+}+
         & a list of items.  Note that the beginning [maroon]_list_ style
           and ending [maroon]_list_ style must be the same.
-& &  |  & [blue]+\begin{math+ [blue]+}+ [maroon]_raw-text_ [blue]+\end{+ [blue]+math}+
+& & [maroon]#|# & [blue]+\begin{math+ [blue]+}+ [maroon]_raw-text_ [blue]+\end{+ [blue]+math}+
         & LaTeX math markup, which will be rendered in display mode.
-& &  |  & [maroon]_blank-line_
+& & [maroon]#|# & [maroon]_blank-line_
         & a newline separating text blocks.
 
 & [maroon]_style_
-  & ::= & [blue]+center+
+  & [maroon]#::=# & [blue]+center+
         & center contents of text block.
-& &  |  & [blue]+quote+
+& & [maroon]#|# & [blue]+quote+
         & indent contents of text block.
 
 & [maroon]_list_
-  & ::= & [blue]+itemize+
+  & [maroon]#::=# & [blue]+itemize+
         & itemized (bullet) list
-& &  |  & [blue]+enumerate+
+& & [maroon]#|# & [blue]+enumerate+
         & enumerated list
 
-& [maroon]_item_   & ::= & [blue]+\item+ [maroon]_text-block_ & list item
+& [maroon]_item_   & [maroon]#::=# & [blue]+\item+ [maroon]_text-block_ & list item
 
 & [maroon]_text_
-  & ::= & [black]#{# [maroon]_text-element_ [black]#}#
+  & [maroon]#::=# & [maroon]#{# [maroon]_text-element_ [maroon]#}#
         & a sequence of zero or more text elements
 
 & [maroon]_text-element_
-  & ::= & [blue]+\b{+ [maroon]_text_ [blue]+}+ & bold text
-& &  |  & [blue]+\i{+ [maroon]_text_ [blue]+}+ & italic text
-& &  |  & [blue]+\e{+ [maroon]_text_ [blue]+}+ & emphasize text
-& &  |  & [blue]+[+ [maroon]_string_ [blue]+]+  & SML code
-& &  |  & [maroon]_esc-string_ & typeset the given escaped string
+  & [maroon]#::=# & [blue]+\b{+ [maroon]_text_ [blue]+}+ & bold text
+& & [maroon]#|# & [blue]+\i{+ [maroon]_text_ [blue]+}+ & italic text
+& & [maroon]#|# & [maroon]_markdown_ & Markdown-style inline text markup
+& & [maroon]#|# & [maroon]_esc-string_ & typeset the given escaped string
 
-& [maroon]_string_ & ::= & [black]#{# [maroon]_ascii-character_ [black]#}#
+& [maroon]_markdown_
+  & [maroon]#::=# & [maroon]#{#[blue]++\`++[maroon]#}#^[maroon]_n_^ [maroon]_code-string_ [maroon]#{#[blue]++`++[maroon]#}#^[maroon]_n_^
+                & quoted SML code (we follow the https://daringfireball.net/projects/markdown/[Markdown]
+                  convention of balanced back-ticks (__a.k.a. grave accents_) to enclose inline code.
+& & [maroon]#|# & [blue]++\*++ [maroon]_esc-string_ [blue]++*++
+                & italic text
+& & [maroon]#|# & [blue]++\*\*++ [maroon]_esc-string_ [blue]++**++
+                & bold text
+
+& [maroon]_code-string_ & [maroon]#::=# & [maroon]#{# [maroon]_ascii-character_ [maroon]#}#
                          & a sequence of one or more printable or whitespace
-			   ASCII characters. Unbalanced occurrances of the
-			   special brackets ([blue]+{+, [blue]+}+, [blue]+[+,
-			   or [blue]+]+) must be escaped
-			   with a backslash ([blue]+\+), as must backslash
-			   itself.
+			   ASCII characters.  Sequences of back-ticks are allowed as long as
+			   the sequences are shorter than the enclosing marks.
 
 & [maroon]_esc-string_
-                   & ::= & [black]#{# [maroon]_ascii-character_ [black]#}#
+                   & [maroon]#::=# & [maroon]#{# [maroon]_ascii-character_ [maroon]#}#
                          & a sequence of one or more printable or whitespace
 			   ASCII characters. The special characters
-			   ([blue]+{+, [blue]+}+, [blue]+[+, [blue]+]+,
-			   [blue]+@+, and [blue]+\+) must be escaped
+			   ([blue]+*+, [blue]+`+, [blue]+@+, and [blue]+\+) must be escaped
 			   with a backslash ([blue]+\+).
 
 & [maroon]_quoted-string_
-                   & ::= & [blue]+"+ [maroon]_ascii-character_ [blue]+"+
+                   & [maroon]#::=# & [blue]+"+ [maroon]_ascii-character_ [blue]+"+
                          & a sequence of one or more printable or whitespace
 			   ASCII characters enclosed in double quotes.
                            The double-quote ([blue]+"+) and backslash ([blue]+\+)
 			   characters must be escaped with a backslash ([blue]+\+).
 
-& [maroon]_id_     & ::= & [black]#{# [maroon]_printable-character_ [black]#}#
+& [maroon]_id_     & [maroon]#::=# & [maroon]#{# [maroon]_printable-character_ [maroon]#}#
                          & a sequence of non-space ASCII characters. Special
                            characters may appear without escape.
 
@@ -225,3 +231,12 @@ include::list-sort.sig[]
 
 The current version of *smldoc* only supports processing SML signatures and only
 generates HTML output.
+
+== Design questions
+
+Do we want to allow Markdown-like notation for inline markup?  For example,
+[source,sml]
+------------
+(** `map f xs` maps the function `f` over the list `xs` from left to right. *)
+val map : ('a -> 'b) -> a list -> b list
+------------
